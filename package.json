@@ -1,0 +1,25 @@
+{
+  "name": "timeentry",
+  "version": "0.1.0",
+  "description": "TAM Time Entry - fast customer time entry for Technical Account Managers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/static-server.js 4173",
+    "build": "node scripts/build-check.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test \"tests/unit/**/*.test.js\"",
+    "test:e2e": "playwright test"
+  },
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^26.6.4",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0",
+    "typescript": "^5.9.3"
+  }
+}
