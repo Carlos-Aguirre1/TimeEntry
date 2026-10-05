@@ -93,23 +93,47 @@ async function setAccount(accountName){
   if(accepted())return;
 
   // Advanced lookup results grid fallback.
-  const rows=[...document.querySelectorAll('tr,[role="row"],.slds-table tbody tr')].filter(visible);
-  const row=rows.find(r=>norm(r.innerText||r.textContent).includes(norm(accountName)));
-  if(row){
-    const radio=row.querySelector('input[type="radio"],input[type="checkbox"]');
-    const target=radio||row.querySelector('a,button,[role="gridcell"]')||row;
-    target.click();
-    if(radio)fire(radio,"change");
-    await sleep(300);
-    const selectBtn=[...document.querySelectorAll("button")].filter(visible).find(b=>{
-      const t=norm(b.innerText||b.textContent);
-      return t==="select"||t==="done";
-    });
-    if(selectBtn){selectBtn.click();await sleep(700);}
-    if(accepted())return;
+  for(let wait=0;wait<15;wait++){
+    const rows=[...document.querySelectorAll('tr,[role="row"],.slds-table tbody tr')].filter(visible);
+    const row=rows.find(r=>norm(r.innerText||r.textContent).includes(norm(accountName)));
+    if(row){
+      const selector=row.querySelector(
+        'input[type="radio"],input[type="checkbox"],[role="radio"],label,.slds-radio_faux,.slds-checkbox_faux'
+      );
+      const firstCell=row.querySelector('td,[role="gridcell"]');
+      const target=selector||firstCell||row;
+      target.dispatchEvent(new MouseEvent("mousedown",{bubbles:true,composed:true}));
+      target.dispatchEvent(new MouseEvent("mouseup",{bubbles:true,composed:true}));
+      target.click();
+      if(selector&&selector.tagName==="INPUT"){
+        selector.checked=true;
+        fire(selector,"input");
+        fire(selector,"change");
+      }
+
+      // Some Salesforce tables react to clicking the whole first cell/row.
+      if(firstCell&&firstCell!==target)firstCell.click();
+      row.dispatchEvent(new MouseEvent("click",{bubbles:true,composed:true}));
+
+      // Wait for Select to become enabled, then commit the lookup choice.
+      for(let i=0;i<12;i++){
+        await sleep(180);
+        const selectBtn=[...document.querySelectorAll("button")].filter(visible).find(b=>{
+          const t=norm(b.innerText||b.textContent);
+          return (t==="select"||t==="done")&&!b.disabled&&b.getAttribute("aria-disabled")!=="true";
+        });
+        if(selectBtn){
+          selectBtn.click();
+          await sleep(900);
+          if(accepted())return;
+          break;
+        }
+      }
+    }
+    await sleep(220);
   }
 
-  throw new Error('Salesforce found "'+accountName+'" but the extension could not select the lookup result.');
+  throw new Error('Salesforce found "'+accountName+'" but the extension could not select the Advanced Search row.');
 }
 async function fillEntry(entry,mapping){
   const accountName=mapping[entry.accountCode];
