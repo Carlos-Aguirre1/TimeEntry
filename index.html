@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TimeEntry • Fast Time Entry</title>
+<link rel="stylesheet" href="styles.css?v=2">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="app-mark">TE</div>
+    <div><small>MCPME • TIMEENTRY</small><h1>Fast Time Entry</h1></div>
+  </div>
+  <button id="historyBtn" class="ghost">Saved <span id="savedCount">0</span></button>
+</header>
+<main>
+  <section id="splashScreen" class="splash-screen">
+    <div class="splash-hero">
+      <div class="app-mark large">TE</div>
+      <small>MCPME • TIMEENTRY</small>
+      <h1>Fast Time Entry</h1>
+      <h2>Customer. Time. Details. Done.</h2>
+      <p>Capture CRM-ready time entries quickly from your phone, then transfer the queue to your laptop.</p>
+      <div class="splash-benefits">
+        <div><b>⚡</b><strong>Fast capture</strong><span>Customer first, then time</span></div>
+        <div><b>▥</b><strong>CRM ready</strong><span>Only the fields you actually use</span></div>
+        <div><b>↗</b><strong>Send to laptop</strong><span>Build a clean JSON queue</span></div>
+      </div>
+      <button id="enterAppBtn" class="splash-enter" type="button">Start time entry <span>→</span></button>
+    </div>
+  </section>
+
+  <section id="portfolioScreen" class="card roster-card hidden">
+    <div class="roster-head">
+      <div>
+        <h2>Select customer</h2>
+        <p id="portfolioProgress">Choose the account you worked on</p>
+      </div>
+    </div>
+    <div class="bulk-toolbar">
+      <div class="compact-control-row">
+        <div></div>
+        <div id="layoutToggle" class="layout-toggle" role="group" aria-label="Customer layout">
+          <button type="button" data-layout="grid" class="active">Grid</button>
+          <button type="button" data-layout="wheel">Wheel</button>
+        </div>
+      </div>
+    </div>
+    <div id="customerGrid" class="player-grid"></div>
+  </section>
+
+  <section id="entryScreen" class="hidden">
+    <section class="card active-player">
+      <button id="backBtn" class="back-btn" type="button">‹ Customers</button>
+      <div><strong id="activeCustomerName"></strong><small id="activeCustomerDetail"></small></div>
+    </section>
+
+    <section class="card section-card">
+      <div class="section-title static-title"><span>TIME ENTRY</span></div>
+      <div class="field-group"><label>Date</label><input id="entryDate" type="date"></div>
+      <div class="field-group"><label>Type</label><select id="entryType"></select></div>
+      <div class="field-group">
+        <label>Number of Hours</label>
+        <div id="hoursGrid" class="hours-grid"></div>
+        <div class="hour-adjust">
+          <button id="hoursMinus" type="button">−</button>
+          <strong id="hoursValue">1.0 h</strong>
+          <button id="hoursPlus" type="button">+</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Details</label>
+        <textarea id="entryDetails" placeholder="Quick description of what you worked on…"></textarea>
+      </div>
+    </section>
+
+    <section class="card actions">
+      <button id="saveBtn" type="button" class="primary">Save Time Entry</button>
+      <button id="saveNextBtn" type="button" class="ghost">Save & choose next customer</button>
+      <p id="message" aria-live="polite"></p>
+    </section>
+  </section>
+
+  <section id="history" class="card hidden">
+    <div class="section-head">
+      <div><h2>Saved time entries</h2><small>CRM-ready queue</small></div>
+      <button id="closeHistoryBtn" class="ghost">Close</button>
+    </div>
+    <div id="historyList"></div>
+    <div class="history-actions">
+      <button id="copyJsonBtn" class="primary">Copy JSON Queue</button>
+      <button id="clearHistoryBtn" class="ghost danger">Clear queue</button>
+    </div>
+    <pre id="jsonPreview"></pre>
+  </section>
+</main>
+<script src="app.js?v=2"></script>
+</body>
+</html>
