@@ -119,7 +119,7 @@ $("#fillCurrent").onclick=async()=>{
 };
 $("#fillSaveNew").onclick=async()=>{
   try{
-    setStatus("Saving current entry and preparing the next...");
+    setStatus("Processing the remaining queue with Save & New...");
     const r=await sendToSalesforce("fillSaveNew");
     setStatus(r.message||"Entry filled and Save & New clicked.");
   }catch(e){setStatus(e.message,true)}
