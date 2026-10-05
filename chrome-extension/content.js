@@ -70,7 +70,10 @@ async function fillEntry(entry,mapping){
 
   const date=fieldByLabel("Date");
   if(!date)throw new Error("Could not find Salesforce Date field.");
-  setNativeValue(date,entry.date);
+  const iso=String(entry.date||"");
+  const m=iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const localized=m ? (m[3]+"/"+m[2]+"/"+m[1]) : iso;
+  setNativeValue(date,localized);
 
   await selectPicklist("Type",entry.type);
 
