@@ -169,9 +169,54 @@ function setupRadialWheel(){
  if(throttle&&!throttle.dataset.bound){
    throttle.dataset.bound="1";
    const knob=throttle.querySelector(".throttle-knob"),track=throttle.querySelector(".throttle-track");
-   let raf=0,speed=0,last=0,drag=false;
-   const paint=y=>{const r=track.getBoundingClientRect(),mid=r.top+r.height/2,half=r.height/2-12,off=Math.max(-half,Math.min(half,y-mid));knob.style.transform="translate(-50%,"+off+"px)";speed=(-off/half)*1.7*(grid.classList.contains("wheel-left")?-1:1);if(!raf){last=performance.now();const tick=t=>{const dt=Math.min(32,t-last);last=t;if(Math.abs(speed)>.02){wheelAngle+=speed*dt*.12;grid.style.setProperty("--wheel-angle",wheelAngle+"deg")}raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick)}};
-   const stop=()=>{drag=false;speed=0;knob.style.transform="translate(-50%,0px)";if(raf){cancelAnimationFrame(raf);raf=0}};
+   let raf=0,targetSpeed=0,currentSpeed=0,last=0,drag=false;
+   const applySpeedFX=()=>{
+     const mag=Math.min(1,Math.abs(currentSpeed)/2.15);
+     grid.style.setProperty("--speed-intensity",mag.toFixed(3));
+     grid.classList.toggle("speed-low",mag>.08&&mag<=.38);
+     grid.classList.toggle("speed-med",mag>.38&&mag<=.72);
+     grid.classList.toggle("speed-high",mag>.72);
+     grid.classList.toggle("spin-forward",currentSpeed>0.02);
+     grid.classList.toggle("spin-reverse",currentSpeed<-.02);
+   };
+   const startLoop=()=>{
+     if(raf)return;
+     last=performance.now();
+     const tick=t=>{
+       const dt=Math.min(32,t-last);last=t;
+       currentSpeed+=(targetSpeed-currentSpeed)*.14;
+       if(!drag&&Math.abs(targetSpeed)<.001)currentSpeed*=.965;
+       if(Math.abs(currentSpeed)>.006){
+         wheelAngle+=currentSpeed*dt*.13;
+         grid.style.setProperty("--wheel-angle",wheelAngle+"deg");
+       }
+       applySpeedFX();
+       if(!drag&&Math.abs(targetSpeed)<.001&&Math.abs(currentSpeed)<.01){
+         currentSpeed=0;
+         applySpeedFX();
+         grid.classList.remove("speed-low","speed-med","speed-high","spin-forward","spin-reverse");
+         grid.style.setProperty("--speed-intensity","0");
+         raf=0;
+         return;
+       }
+       raf=requestAnimationFrame(tick);
+     };
+     raf=requestAnimationFrame(tick);
+   };
+   const paint=y=>{
+     const r=track.getBoundingClientRect(),mid=r.top+r.height/2,half=r.height/2-12;
+     const off=Math.max(-half,Math.min(half,y-mid));
+     knob.style.transform="translate(-50%,"+off+"px)";
+     const signed=(-off/half);
+     targetSpeed=signed*2.15*(grid.classList.contains("wheel-left")?-1:1);
+     startLoop();
+   };
+   const stop=()=>{
+     drag=false;
+     targetSpeed=0;
+     knob.style.transform="translate(-50%,0px)";
+     startLoop();
+   };
    throttle.addEventListener("pointerdown",e=>{drag=true;throttle.setPointerCapture?.(e.pointerId);paint(e.clientY);e.preventDefault();e.stopPropagation()},{passive:false});
    throttle.addEventListener("pointermove",e=>{if(!drag)return;paint(e.clientY);e.preventDefault();e.stopPropagation()},{passive:false});
    throttle.addEventListener("pointerup",stop); throttle.addEventListener("pointercancel",stop);
