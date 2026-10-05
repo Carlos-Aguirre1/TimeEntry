@@ -155,14 +155,14 @@ function deleteEntry(id){
  renderHistory();
  showSaveConfirmation("Entry deleted");
 }
-function buildTransferPackage(){
- const entries=pendingEntries();
- if(!entries.length)throw new Error("No new entries to send");
+function buildTransferPackage(includeAll=false){
+ const entries=includeAll?saved():pendingEntries();
+ if(!entries.length)throw new Error(includeAll?"No saved entries to send":"No new entries to send");
  const compact=entries.map(({accountCode,date,type,hours,details})=>[accountCode,date,type,hours,details]);
  const url=location.origin+location.pathname.replace(/[^/]*$/,"")+"transfer.html#q="+encodeURIComponent(JSON.stringify(compact));
- return {url,ids:entries.map(x=>x.id),count:entries.length};
+ return {url,ids:entries.map(x=>x.id),count:entries.length,includeAll};
 }
-function buildTransferUrl(){return buildTransferPackage().url}
+function buildTransferUrl(){return buildTransferPackage(false).url}
 function showTransferLink(url){
  const box=$("#transferLinkBox"),link=$("#transferLink");
  if(!box||!link)return;
@@ -188,6 +188,29 @@ async function sendToLaptop(){
    await navigator.clipboard.writeText(pack.url);
    markTransferred(pack.ids);
    showSaveConfirmation(pack.count+" new entr"+(pack.count===1?"y":"ies")+" copied");
+ }catch(_){
+   showSaveConfirmation("Transfer link ready below");
+ }
+}
+async function sendAllToLaptop(){
+ let pack;
+ try{pack=buildTransferPackage(true)}catch(e){showSaveConfirmation(e.message);return}
+ if(!confirm("Send all "+pack.count+" saved entries, including entries that may have been transferred before?"))return;
+ showTransferLink(pack.url);
+ try{
+   if(navigator.share){
+     await navigator.share({title:"TimeEntry Transfer",text:"Open this link on your laptop to load ALL saved TimeEntry records into the Chrome extension.",url:pack.url});
+     markTransferred(pack.ids);
+     showSaveConfirmation(pack.count+" saved entries shared");
+     return;
+   }
+ }catch(err){
+   if(err&&err.name==="AbortError")return;
+ }
+ try{
+   await navigator.clipboard.writeText(pack.url);
+   markTransferred(pack.ids);
+   showSaveConfirmation(pack.count+" saved entries copied");
  }catch(_){
    showSaveConfirmation("Transfer link ready below");
  }
@@ -295,6 +318,7 @@ $("#saveNextBtn").onclick=()=>saveEntry(true);
 $("#historyBtn").onclick=()=>{$("#history").classList.remove("hidden");renderHistory();$("#history").scrollIntoView({behavior:"smooth"})};
 $("#closeHistoryBtn").onclick=()=>$("#history").classList.add("hidden");
 $("#sendLaptopBtn").onclick=sendToLaptop;
+$("#sendAllLaptopBtn").onclick=sendAllToLaptop;
 $("#copyTransferLinkBtn").onclick=async()=>{try{const pack=buildTransferPackage();showTransferLink(pack.url);await navigator.clipboard.writeText(pack.url);markTransferred(pack.ids);showSaveConfirmation(pack.count+" new entr"+(pack.count===1?"y":"ies")+" copied")}catch(e){showSaveConfirmation(e.message)}};
 $("#copyJsonBtn").onclick=copyJson;
 $("#clearHistoryBtn").onclick=()=>{if(confirm("Clear all saved time entries?")){saveAll([]);renderHistory()}};
