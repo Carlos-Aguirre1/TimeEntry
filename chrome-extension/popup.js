@@ -88,7 +88,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     PS:"SOTI - Professional Services",
     BHC:"Baptist Health Care",
     CPF:"CHAMPION PETFOODS HOLDING INC.",
-    MAN:"MANITOULIN TRANSPORT"
+    MAN:"MANITOULIN TRANSPORT",
+    CB:"Cleaver-Brooks"
   };
   // Merge new defaults into any existing locally saved mapping so newly added
   // customer codes appear automatically without overwriting custom mappings.
