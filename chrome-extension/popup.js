@@ -56,7 +56,10 @@ async function sendToSalesforce(action){
 
 document.addEventListener("DOMContentLoaded",async()=>{
   const stored=await chrome.storage.local.get(["accountMapping","queueText"]);
-  $("#mapping").value=mappingToText(stored.accountMapping||{});
+  const defaultMapping={BL:"BlueLinx Corporation",IS:"IntegraServ Inc",HC:"Heartland Computers, Inc",KI:"KIOSK Information Systems Inc",TD:"Taylor Data Systems Inc",PS:"SOTI - Professional Services"};
+  const effectiveMapping=Object.keys(stored.accountMapping||{}).length?stored.accountMapping:defaultMapping;
+  if(!Object.keys(stored.accountMapping||{}).length)await chrome.storage.local.set({accountMapping:effectiveMapping});
+  $("#mapping").value=mappingToText(effectiveMapping);
   $("#queue").value=stored.queueText||"";
   updateQueueStatus();
 });
