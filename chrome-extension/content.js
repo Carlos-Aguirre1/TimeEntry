@@ -168,9 +168,20 @@ async function setAccount(accountName){
           || [...document.querySelectorAll("button")].filter(visible).find(b=>norm(b.innerText||b.textContent)==="select");
         if(selectBtn && !selectBtn.disabled && selectBtn.getAttribute("aria-disabled")!=="true"){
           selectBtn.click();
-          await sleep(1000);
-          if(accepted())return;
-          break;
+
+          // Salesforce re-renders the Time Tracking form after the lookup modal closes.
+          // The old Account container becomes stale, so do not require accepted()
+          // here. Wait for Advanced Search to disappear, then continue with the
+          // remaining Time Tracking fields.
+          for(let closeWait=0;closeWait<20;closeWait++){
+            await sleep(180);
+            const stillOpen=[...document.querySelectorAll('[role="dialog"],.slds-modal,.modal-container')]
+              .filter(visible)
+              .some(d=>norm(d.innerText||d.textContent).includes("advanced search"));
+            if(!stillOpen)break;
+          }
+          await sleep(350);
+          return;
         }
       }
     }
