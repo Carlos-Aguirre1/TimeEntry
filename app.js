@@ -6,7 +6,8 @@ const customers=[
 {id:"TD",name:"TD",short:"TD",detail:"Customer code"},
 {id:"PS",name:"PS",short:"PS",detail:"Customer code"},
 {id:"BHC",name:"BHC",short:"BHC",detail:"Customer code"},
-{id:"CPF",name:"CPF",short:"CPF",detail:"Customer code"}
+{id:"CPF",name:"CPF",short:"CPF",detail:"Customer code"},
+{id:"MAN",name:"MAN",short:"MAN",detail:"Customer code"}
 ];
 
 const types=[
