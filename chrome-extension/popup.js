@@ -87,7 +87,8 @@ document.addEventListener("DOMContentLoaded",async()=>{
     TD:"Taylor Data Systems Inc",
     PS:"SOTI - Professional Services",
     BHC:"Baptist Health Care",
-    CPF:"CHAMPION PETFOODS HOLDING INC."
+    CPF:"CHAMPION PETFOODS HOLDING INC.",
+    MAN:"MANITOULIN TRANSPORT"
   };
   // Merge new defaults into any existing locally saved mapping so newly added
   // customer codes appear automatically without overwriting custom mappings.
