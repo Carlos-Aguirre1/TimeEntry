@@ -7,7 +7,8 @@ const customers=[
 {id:"PS",name:"PS",short:"PS",detail:"Customer code"},
 {id:"BHC",name:"BHC",short:"BHC",detail:"Customer code"},
 {id:"CPF",name:"CPF",short:"CPF",detail:"Customer code"},
-{id:"MAN",name:"MAN",short:"MAN",detail:"Customer code"}
+{id:"MAN",name:"MAN",short:"MAN",detail:"Customer code"},
+{id:"CB",name:"CB",short:"CB",detail:"Customer code"}
 ];
 
 const types=[
