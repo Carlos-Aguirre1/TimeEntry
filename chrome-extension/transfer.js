@@ -11,7 +11,7 @@
         if(item[key]===undefined||item[key]===null||item[key]==="")throw new Error("The transfer data is missing "+key+".");
       }
     }
-    await chrome.storage.local.set({queueText:JSON.stringify(queue,null,2)});
+    await chrome.storage.local.set({queueText:JSON.stringify(queue,null,2),queueCursor:0});
     history.replaceState(null,"",location.pathname);
     if(msg){
       msg.textContent=queue.length+" entries imported into the TimeEntry Chrome extension ✓";
