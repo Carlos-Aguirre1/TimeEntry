@@ -93,52 +93,54 @@ async function setAccount(accountName){
   if(accepted())return;
 
   // Advanced lookup results grid fallback.
-  for(let wait=0;wait<15;wait++){
-    const rows=[...document.querySelectorAll('tr,[role="row"],.slds-table tbody tr')].filter(visible);
-    const row=rows.find(r=>norm(r.innerText||r.textContent).includes(norm(accountName)));
-    if(row){
-      const selector=row.querySelector(
-        'input[type="radio"],input[type="checkbox"],[role="radio"],label,.slds-radio_faux,.slds-checkbox_faux'
+  // User-confirmed workflow: choose the first result row, then click Select.
+  for(let wait=0;wait<20;wait++){
+    await sleep(220);
+
+    const rows=[...document.querySelectorAll('tr,[role="row"],.slds-table tbody tr')]
+      .filter(visible)
+      .filter(r=>{
+        const t=norm(r.innerText||r.textContent);
+        return t && !t.includes("account name") && !t.includes("billing city");
+      });
+
+    if(rows.length){
+      const firstRow=rows[0];
+      const radio=firstRow.querySelector(
+        'input[type="radio"],[role="radio"],label,.slds-radio_faux'
       );
-      const firstCell=row.querySelector('td,[role="gridcell"]');
-      const target=selector||firstCell||row;
+      const firstCell=firstRow.querySelector('td,[role="gridcell"]');
 
       const clickLikeUser=(el)=>{
         if(!el)return;
         const r=el.getBoundingClientRect();
-        const x=r.left+Math.min(Math.max(12,r.width*.18),28);
+        const x=r.left+Math.min(Math.max(10,r.width*.15),24);
         const y=r.top+r.height/2;
         for(const type of ["pointerdown","mousedown","pointerup","mouseup","click"]){
           const C=type.startsWith("pointer")?PointerEvent:MouseEvent;
-          el.dispatchEvent(new C(type,{bubbles:true,composed:true,clientX:x,clientY:y,button:0,buttons:type.includes("down")?1:0}));
+          el.dispatchEvent(new C(type,{
+            bubbles:true,composed:true,clientX:x,clientY:y,
+            button:0,buttons:type.includes("down")?1:0
+          }));
         }
       };
 
-      clickLikeUser(target);
-      if(selector&&selector.tagName==="INPUT"){
-        selector.checked=true;
-        fire(selector,"input");
-        fire(selector,"change");
+      clickLikeUser(radio||firstCell||firstRow);
+      if(radio&&radio.tagName==="INPUT"){
+        radio.checked=true;
+        fire(radio,"input");
+        fire(radio,"change");
       }
-
-      // Salesforce Advanced Search sometimes only responds to a click on the visible
-      // radio circle in the first column rather than the row's hidden input.
-      const rr=row.getBoundingClientRect();
-      const radioX=rr.left+14;
-      const radioY=rr.top+rr.height/2;
-      const visibleRadio=document.elementFromPoint(radioX,radioY);
-      clickLikeUser(visibleRadio);
-
-      // Also click the first cell/row as a final selection nudge.
       if(firstCell)clickLikeUser(firstCell);
-      clickLikeUser(row);
+      clickLikeUser(firstRow);
 
-      // Wait for Select to become enabled, then commit the lookup choice.
-      for(let i=0;i<12;i++){
+      // Wait for the bottom-right Select button to become enabled.
+      for(let i=0;i<20;i++){
         await sleep(180);
-        const selectBtn=[...document.querySelectorAll("button")].filter(visible).find(b=>{
+        const buttons=[...document.querySelectorAll("button")].filter(visible);
+        const selectBtn=buttons.find(b=>{
           const t=norm(b.innerText||b.textContent);
-          return (t==="select"||t==="done")&&!b.disabled&&b.getAttribute("aria-disabled")!=="true";
+          return t==="select" && !b.disabled && b.getAttribute("aria-disabled")!=="true";
         });
         if(selectBtn){
           selectBtn.click();
@@ -148,7 +150,6 @@ async function setAccount(accountName){
         }
       }
     }
-    await sleep(220);
   }
 
   throw new Error('Salesforce found "'+accountName+'" but the extension could not select the Advanced Search row.');
