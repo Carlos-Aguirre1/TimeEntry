@@ -138,10 +138,22 @@ function deleteEntry(id){
  renderHistory();
  showSaveConfirmation("Entry deleted");
 }
-async function sendToLaptop(){
+function buildTransferUrl(){
  const data=saved().map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
- if(!data.length){showSaveConfirmation("No saved entries to send");return}
- const url="https://carlos-aguirre1.github.io/TimeEntry/transfer.html#q="+encodeURIComponent(JSON.stringify(data));
+ if(!data.length)throw new Error("No saved entries to send");
+ return location.origin+location.pathname.replace(/[^/]*$/,"")+"transfer.html#q="+encodeURIComponent(JSON.stringify(data));
+}
+function showTransferLink(url){
+ const box=$("#transferLinkBox"),link=$("#transferLink");
+ if(!box||!link)return;
+ link.href=url;
+ link.textContent=url;
+ box.classList.remove("hidden");
+}
+async function sendToLaptop(){
+ let url;
+ try{url=buildTransferUrl()}catch(e){showSaveConfirmation(e.message);return}
+ showTransferLink(url);
  try{
    if(navigator.share){
      await navigator.share({title:"TimeEntry Transfer",text:"Open this link on your laptop to load the TimeEntry queue into the Chrome extension.",url});
@@ -155,7 +167,7 @@ async function sendToLaptop(){
    await navigator.clipboard.writeText(url);
    showSaveConfirmation("Transfer link copied");
  }catch(_){
-   prompt("Copy this transfer link and open it on your laptop:",url);
+   showSaveConfirmation("Transfer link ready below");
  }
 }
 async function copyJson(){
@@ -261,6 +273,7 @@ $("#saveNextBtn").onclick=()=>saveEntry(true);
 $("#historyBtn").onclick=()=>{$("#history").classList.remove("hidden");renderHistory();$("#history").scrollIntoView({behavior:"smooth"})};
 $("#closeHistoryBtn").onclick=()=>$("#history").classList.add("hidden");
 $("#sendLaptopBtn").onclick=sendToLaptop;
+$("#copyTransferLinkBtn").onclick=async()=>{try{const url=buildTransferUrl();showTransferLink(url);await navigator.clipboard.writeText(url);showSaveConfirmation("Transfer link copied")}catch(e){showSaveConfirmation(e.message)}};
 $("#copyJsonBtn").onclick=copyJson;
 $("#clearHistoryBtn").onclick=()=>{if(confirm("Clear all saved time entries?")){saveAll([]);renderHistory()}};
 $("#layoutToggle").onclick=e=>{const b=e.target.closest("button[data-layout]");if(!b)return;localStorage.setItem("timeentry-layout",b.dataset.layout);applyRosterLayout()};
