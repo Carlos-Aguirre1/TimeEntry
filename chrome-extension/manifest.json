@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "TimeEntry Salesforce Transfer 3.1",
-  "version": "3.1.0",
+  "name": "TimeEntry Salesforce Transfer 3.2",
+  "version": "3.2.0",
   "description": "Transfers sanitized TimeEntry queue records into the currently open Salesforce Time Tracking form.",
   "permissions": ["activeTab", "storage", "scripting"],
   "host_permissions": ["https://*.salesforce.com/*", "https://*.force.com/*", "https://*.lightning.force.com/*", "https://carlos-aguirre1.github.io/TimeEntry/*"],
