@@ -247,17 +247,26 @@ chrome.runtime.onMessage.addListener((msg,_sender,sendResponse)=>{
   (async()=>{
     try{
       if(msg.action==="fillCurrent"){
-        const message=await fillEntry(msg.queue[0],msg.mapping);
-        return {ok:true,message:message+". Review the fields before saving."};
+        const cursor=Math.max(0,Math.min(Number(msg.cursor||0),msg.queue.length-1));
+        const message=await fillEntry(msg.queue[cursor],msg.mapping);
+        return {ok:true,message:message+". Review the fields before saving.",nextCursor:cursor};
       }
       if(msg.action==="fillSaveNew"){
-        const message=await fillEntry(msg.queue[0],msg.mapping);
+        const cursor=Math.max(0,Math.min(Number(msg.cursor||0),msg.queue.length-1));
+        const message=await fillEntry(msg.queue[cursor],msg.mapping);
         await clickSaveNew();
-        return {ok:true,message:message+". Save & New clicked."};
+        if(cursor<msg.queue.length-1){
+          await waitForNewForm();
+          await fillEntry(msg.queue[cursor+1],msg.mapping);
+          return {ok:true,message:message+". Saved. Next entry filled and ready for review.",nextCursor:cursor+1};
+        }
+        return {ok:true,message:message+". Saved. Queue complete.",nextCursor:msg.queue.length};
       }
       if(msg.action==="runQueue"){
-        const message=await runQueue(msg.queue,msg.mapping);
-        return {ok:true,message};
+        const cursor=Math.max(0,Math.min(Number(msg.cursor||0),msg.queue.length-1));
+        const remaining=msg.queue.slice(cursor);
+        const message=await runQueue(remaining,msg.mapping);
+        return {ok:true,message,nextCursor:msg.queue.length};
       }
       return {ok:false,error:"Unknown TimeEntry action."};
     }catch(e){return {ok:false,error:e.message||String(e)}}
