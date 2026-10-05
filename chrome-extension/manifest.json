@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "TimeEntry Salesforce Transfer",
+  "version": "0.1.0",
+  "description": "Transfers sanitized TimeEntry queue records into the currently open Salesforce Time Tracking form.",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "host_permissions": ["https://*.salesforce.com/*", "https://*.force.com/*", "https://*.lightning.force.com/*"],
+  "action": {
+    "default_title": "TimeEntry Transfer",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.salesforce.com/*", "https://*.force.com/*", "https://*.lightning.force.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
