@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TimeEntry Transfer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="mark">TE</div>
+    <div><small>MCPME • TIMEENTRY</small><h1>Salesforce Transfer</h1></div>
+  </header>
+
+  <main>
+    <section>
+      <label for="mapping">Private account mapping <span>(stored only in Chrome)</span></label>
+      <textarea id="mapping" rows="6" placeholder="BL=Real Salesforce Account Name&#10;IS=Real Salesforce Account Name"></textarea>
+      <button id="saveMapping" class="secondary">Save Mapping</button>
+    </section>
+
+    <section>
+      <label for="queue">TimeEntry JSON Queue</label>
+      <textarea id="queue" rows="10" placeholder='[{"accountCode":"BL","date":"2026-10-05","type":"Meeting","hours":1.5,"details":"Quarterly review"}]'></textarea>
+      <div class="row">
+        <button id="loadClipboard" class="secondary">Paste Clipboard</button>
+        <button id="saveQueue" class="secondary">Save Queue</button>
+      </div>
+      <div id="queueStatus" class="status">No queue loaded.</div>
+    </section>
+
+    <section class="actions">
+      <button id="fillCurrent" class="primary">Fill Current Entry</button>
+      <button id="fillSaveNew" class="primary alt">Fill + Save & New</button>
+      <button id="runQueue" class="dangerous">Run Entire Queue</button>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section class="note">
+      <strong>First test:</strong> open Salesforce's New Time Tracking form and use <b>Fill Current Entry</b>. Confirm all five fields before trying Save & New.
+    </section>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
