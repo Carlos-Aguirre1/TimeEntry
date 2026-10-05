@@ -141,25 +141,23 @@ function deleteEntry(id){
 async function sendToLaptop(){
  const data=saved().map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
  if(!data.length){showSaveConfirmation("No saved entries to send");return}
- const text=JSON.stringify(data,null,2);
- const shareText="TimeEntry queue\n\n"+text;
+ const url="https://carlos-aguirre1.github.io/TimeEntry/transfer.html#q="+encodeURIComponent(JSON.stringify(data));
  try{
    if(navigator.share){
-     await navigator.share({title:"TimeEntry Queue",text:shareText});
-     showSaveConfirmation("Share sheet opened");
+     await navigator.share({title:"TimeEntry Transfer",text:"Open this link on your laptop to load the TimeEntry queue into the Chrome extension.",url});
+     showSaveConfirmation("Transfer link shared");
      return;
    }
  }catch(err){
    if(err&&err.name==="AbortError")return;
  }
  try{
-   await navigator.clipboard.writeText(text);
-   showSaveConfirmation("Queue copied — paste on laptop");
+   await navigator.clipboard.writeText(url);
+   showSaveConfirmation("Transfer link copied");
  }catch(_){
-   prompt("Copy this queue and paste it into the laptop extension:",text);
+   prompt("Copy this transfer link and open it on your laptop:",url);
  }
 }
-
 async function copyJson(){
  const data=saved().map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
  const text=JSON.stringify(data,null,2);
