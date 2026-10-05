@@ -18,6 +18,8 @@ const types=[
 const $=s=>document.querySelector(s);
 let activeCustomer=null;
 let selectedHours=1;
+let editingId=null;
+let saveLocked=false;
 let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
 
 function saved(){try{return JSON.parse(localStorage.getItem("timeentry-entries")||"[]")}catch(_){return[]}}
@@ -33,6 +35,7 @@ function renderPortfolio(){
   applyRosterLayout();
 }
 function openCustomer(id){
+  editingId=null;
   activeCustomer=customers.find(c=>c.id===id);
   selectedHours=1;
   $("#activeCustomerName").textContent=activeCustomer.short;
@@ -41,6 +44,8 @@ function openCustomer(id){
   $("#entryType").value="Meeting";
   $("#entryDetails").value="";
   $("#message").textContent="";
+  $("#saveBtn").textContent="Save Time Entry";
+  $("#saveNextBtn").classList.remove("hidden");
   renderHours();
   showOnly("entryScreen");
 }
@@ -63,23 +68,75 @@ function buildEntry(){
    details:$("#entryDetails").value.trim()
  };
 }
+function showSaveConfirmation(text){
+  $("#message").textContent=text;
+  const toast=$("#saveToast");
+  if(toast){
+    toast.textContent=text;
+    toast.classList.add("show");
+    clearTimeout(showSaveConfirmation.timer);
+    showSaveConfirmation.timer=setTimeout(()=>toast.classList.remove("show"),1800);
+  }
+}
 function saveEntry(next){
-  if(!activeCustomer)return;
+  if(!activeCustomer||saveLocked)return;
   const entry=buildEntry();
   if(!entry.type){$("#message").textContent="Choose a Type.";return}
   if(!entry.details){$("#message").textContent="Add Details.";return}
+  saveLocked=true;
+  $("#saveBtn").disabled=true;
+  $("#saveNextBtn").disabled=true;
   const data=saved();
-  data.push({id:crypto.randomUUID?.()||String(Date.now()),timestamp:new Date().toISOString(),...entry});
+  if(editingId){
+    const i=data.findIndex(x=>x.id===editingId);
+    if(i>=0)data[i]={...data[i],...entry,updatedAt:new Date().toISOString()};
+  }else{
+    data.push({id:crypto.randomUUID?.()||String(Date.now()),timestamp:new Date().toISOString(),...entry});
+  }
   saveAll(data);
   renderHistory();
-  $("#message").textContent="Saved ✓";
-  if(next)setTimeout(showPortfolio,180);
+  showSaveConfirmation(editingId?"Updated ✓":"Saved ✓");
+  const wasEditing=!!editingId;
+  editingId=null;
+  setTimeout(()=>{
+    saveLocked=false;
+    $("#saveBtn").disabled=false;
+    $("#saveNextBtn").disabled=false;
+    if(next||wasEditing)showPortfolio();
+  },650);
 }
 function renderHistory(){
  const data=saved(); $("#savedCount").textContent=data.length;
- $("#historyList").innerHTML=data.length?data.slice().reverse().map(x=>`<div class="saved-row"><div><strong>${x.accountCode}</strong><small>${x.date} • ${x.type} • ${Number(x.hours).toFixed(1)} h</small><span>${x.details}</span></div></div>`).join(""):"<p>No time entries saved yet.</p>";
+ $("#historyList").innerHTML=data.length?data.slice().reverse().map(x=>`<div class="saved-row"><div class="saved-content"><strong>${x.accountCode}</strong><small>${x.date} • ${x.type} • ${Number(x.hours).toFixed(1)} h</small><span>${x.details}</span></div><div class="entry-controls"><button type="button" class="entry-edit" data-edit="${x.id}">Edit</button><button type="button" class="entry-delete" data-delete="${x.id}">Delete</button></div></div>`).join(""):"<p>No time entries saved yet.</p>";
+ $("#historyList").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editEntry(b.dataset.edit));
+ $("#historyList").querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteEntry(b.dataset.delete));
  const queue=data.map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
  $("#jsonPreview").textContent=JSON.stringify(queue,null,2);
+}
+function editEntry(id){
+ const x=saved().find(e=>e.id===id); if(!x)return;
+ editingId=id;
+ activeCustomer=customers.find(c=>c.id===x.accountCode)||{id:x.accountCode,short:x.accountCode};
+ selectedHours=Number(x.hours)||1;
+ $("#activeCustomerName").textContent=x.accountCode;
+ $("#activeCustomerDetail").textContent="Editing saved entry";
+ $("#entryDate").value=x.date||todayISO();
+ $("#entryType").value=x.type||"";
+ $("#entryDetails").value=x.details||"";
+ $("#saveBtn").textContent="Update Time Entry";
+ $("#saveNextBtn").classList.add("hidden");
+ $("#message").textContent="Editing saved entry";
+ $("#history").classList.add("hidden");
+ renderHours();
+ showOnly("entryScreen");
+}
+function deleteEntry(id){
+ const data=saved();
+ const x=data.find(e=>e.id===id); if(!x)return;
+ if(!confirm(`Delete this ${x.accountCode} entry? This cannot be undone.`))return;
+ saveAll(data.filter(e=>e.id!==id));
+ renderHistory();
+ showSaveConfirmation("Entry deleted");
 }
 async function copyJson(){
  const data=saved().map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
