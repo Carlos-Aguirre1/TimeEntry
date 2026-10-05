@@ -79,9 +79,20 @@ async function sendToSalesforce(action){
 
 document.addEventListener("DOMContentLoaded",async()=>{
   const stored=await chrome.storage.local.get(["accountMapping","queueText","queueCursor"]);
-  const defaultMapping={BL:"BlueLinx Corporation",IS:"IntegraServ Inc",HC:"Heartland Computers, Inc",KI:"KIOSK Information Systems Inc",TD:"Taylor Data Systems Inc",PS:"SOTI - Professional Services"};
-  const effectiveMapping=Object.keys(stored.accountMapping||{}).length?stored.accountMapping:defaultMapping;
-  if(!Object.keys(stored.accountMapping||{}).length)await chrome.storage.local.set({accountMapping:effectiveMapping});
+  const defaultMapping={
+    BL:"BlueLinx Corporation",
+    IS:"IntegraServ Inc",
+    HC:"Heartland Computers, Inc",
+    KI:"KIOSK Information Systems Inc",
+    TD:"Taylor Data Systems Inc",
+    PS:"SOTI - Professional Services",
+    BHC:"Baptist Health Care",
+    CPF:"CHAMPION PETFOODS HOLDING INC."
+  };
+  // Merge new defaults into any existing locally saved mapping so newly added
+  // customer codes appear automatically without overwriting custom mappings.
+  const effectiveMapping={...defaultMapping,...(stored.accountMapping||{})};
+  await chrome.storage.local.set({accountMapping:effectiveMapping});
   $("#mapping").value=mappingToText(effectiveMapping);
   $("#queue").value=stored.queueText||"";
   updateQueueStatus();
