@@ -44,12 +44,13 @@ async function getActiveTab(){
 }
 async function sendToSalesforce(action){
   const queue=parseQueue();
-  const stored=await chrome.storage.local.get(["accountMapping"]);
+  const stored=await chrome.storage.local.get(["accountMapping","queueCursor"]);
   const mapping=stored.accountMapping||{};
   const missing=[...new Set(queue.map(x=>x.accountCode).filter(c=>!mapping[c]))];
   if(missing.length)throw new Error("Missing account mapping for: "+missing.join(", "));
   const tab=await getActiveTab();
-  const message={source:"timeentry-extension",action,queue,mapping};
+  const cursor=Math.max(0,Math.min(Number(stored.queueCursor||0),queue.length-1));
+  const message={source:"timeentry-extension",action,queue,mapping,cursor};
 
   const trySend=()=>chrome.tabs.sendMessage(tab.id,message);
 
@@ -72,17 +73,19 @@ async function sendToSalesforce(action){
   }
 
   if(!response?.ok)throw new Error(response?.error||"Salesforce transfer failed.");
+  if(Number.isInteger(response.nextCursor))await chrome.storage.local.set({queueCursor:response.nextCursor});
   return response;
 }
 
 document.addEventListener("DOMContentLoaded",async()=>{
-  const stored=await chrome.storage.local.get(["accountMapping","queueText"]);
+  const stored=await chrome.storage.local.get(["accountMapping","queueText","queueCursor"]);
   const defaultMapping={BL:"BlueLinx Corporation",IS:"IntegraServ Inc",HC:"Heartland Computers, Inc",KI:"KIOSK Information Systems Inc",TD:"Taylor Data Systems Inc",PS:"SOTI - Professional Services"};
   const effectiveMapping=Object.keys(stored.accountMapping||{}).length?stored.accountMapping:defaultMapping;
   if(!Object.keys(stored.accountMapping||{}).length)await chrome.storage.local.set({accountMapping:effectiveMapping});
   $("#mapping").value=mappingToText(effectiveMapping);
   $("#queue").value=stored.queueText||"";
   updateQueueStatus();
+  if(stored.queueText && stored.queueCursor===undefined)await chrome.storage.local.set({queueCursor:0});
 });
 
 $("#saveMapping").onclick=async()=>{
@@ -93,7 +96,7 @@ $("#saveMapping").onclick=async()=>{
 $("#saveQueue").onclick=async()=>{
   try{
     parseQueue();
-    await chrome.storage.local.set({queueText:$("#queue").value});
+    await chrome.storage.local.set({queueText:$("#queue").value,queueCursor:0});
     updateQueueStatus();
     setStatus("Queue saved locally in Chrome.");
   }catch(e){setStatus(e.message,true)}
@@ -109,14 +112,14 @@ $("#queue").addEventListener("input",updateQueueStatus);
 
 $("#fillCurrent").onclick=async()=>{
   try{
-    setStatus("Filling first queue entry...");
+    setStatus("Filling current queue entry...");
     const r=await sendToSalesforce("fillCurrent");
     setStatus(r.message||"Current entry filled. Review Salesforce before saving.");
   }catch(e){setStatus(e.message,true)}
 };
 $("#fillSaveNew").onclick=async()=>{
   try{
-    setStatus("Filling and saving first queue entry...");
+    setStatus("Saving current entry and preparing the next...");
     const r=await sendToSalesforce("fillSaveNew");
     setStatus(r.message||"Entry filled and Save & New clicked.");
   }catch(e){setStatus(e.message,true)}
