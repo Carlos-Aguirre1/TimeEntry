@@ -12,27 +12,45 @@ function setNativeValue(el,value){
 function allTextEls(){
   return [...document.querySelectorAll("label,span,div,lightning-base-formatted-text,button")].filter(visible);
 }
+function activeFormRoot(){
+  const candidates=[...document.querySelectorAll('[role="dialog"],.slds-modal,.modal-container,records-record-edit-form')]
+    .filter(visible);
+  const root=candidates.find(c=>{
+    const t=norm(c.innerText||c.textContent);
+    return t.includes("new time tracking") && (t.includes("save & new")||t.includes("save and new"));
+  });
+  return root||document;
+}
 function fieldByLabel(labelText){
   const wanted=norm(labelText);
-  const labels=[...document.querySelectorAll("label")].filter(visible);
-  let label=labels.find(x=>norm(x.textContent)===wanted)||labels.find(x=>norm(x.textContent).includes(wanted));
-  if(label){
-    const id=label.getAttribute("for");
-    if(id){
-      const byId=document.getElementById(id); if(byId&&visible(byId))return byId;
-    }
-    const container=label.closest(".slds-form-element,lightning-input,lightning-textarea,lightning-combobox,records-record-layout-item")||label.parentElement;
-    const input=container?.querySelector("input,textarea,button[role=combobox],button[aria-haspopup=listbox]");
-    if(input&&visible(input))return input;
-  }
-  const containers=[...document.querySelectorAll(".slds-form-element,lightning-input,lightning-textarea,lightning-combobox,records-record-layout-item")].filter(visible);
-  for(const c of containers){
-    if(norm(c.innerText).startsWith(wanted)||norm(c.innerText).includes(wanted)){
-      const input=c.querySelector("input,textarea,button[role=combobox],button[aria-haspopup=listbox]");
+  const root=activeFormRoot();
+
+  const findIn=scope=>{
+    const labels=[...scope.querySelectorAll("label")].filter(visible);
+    let label=labels.find(x=>norm(x.textContent)===wanted)||labels.find(x=>norm(x.textContent).includes(wanted));
+    if(label){
+      const id=label.getAttribute("for");
+      if(id){
+        const byId=(scope.getElementById?scope.getElementById(id):document.getElementById(id));
+        if(byId&&visible(byId))return byId;
+      }
+      const container=label.closest(".slds-form-element,lightning-input,lightning-textarea,lightning-combobox,records-record-layout-item,lightning-base-combobox")||label.parentElement;
+      const input=container?.querySelector("input,textarea,select,button[role=combobox],button[aria-haspopup=listbox],[role=combobox]");
       if(input&&visible(input))return input;
     }
-  }
-  return null;
+
+    const containers=[...scope.querySelectorAll(".slds-form-element,lightning-input,lightning-textarea,lightning-combobox,records-record-layout-item,lightning-base-combobox")].filter(visible);
+    for(const c of containers){
+      const t=norm(c.innerText||c.textContent);
+      if(t===wanted||t.startsWith(wanted+" ")||t.includes(wanted)){
+        const input=c.querySelector("input,textarea,select,button[role=combobox],button[aria-haspopup=listbox],[role=combobox]");
+        if(input&&visible(input))return input;
+      }
+    }
+    return null;
+  };
+
+  return findIn(root) || (root!==document ? findIn(document) : null);
 }
 async function selectPicklist(label,value){
   const el=fieldByLabel(label);
