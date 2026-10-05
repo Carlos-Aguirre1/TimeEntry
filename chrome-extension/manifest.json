@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Transfers sanitized TimeEntry queue records into the currently open Salesforce Time Tracking form.",
   "permissions": ["activeTab", "storage", "scripting"],
-  "host_permissions": ["https://*.salesforce.com/*", "https://*.force.com/*", "https://*.lightning.force.com/*"],
+  "host_permissions": ["https://*.salesforce.com/*", "https://*.force.com/*", "https://*.lightning.force.com/*", "https://carlos-aguirre1.github.io/TimeEntry/*"],
   "action": {
     "default_title": "TimeEntry Transfer",
     "default_popup": "popup.html"
@@ -13,6 +13,11 @@
     {
       "matches": ["https://*.salesforce.com/*", "https://*.force.com/*", "https://*.lightning.force.com/*"],
       "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://carlos-aguirre1.github.io/TimeEntry/transfer.html*"],
+      "js": ["transfer.js"],
       "run_at": "document_idle"
     }
   ]
