@@ -49,7 +49,28 @@ async function sendToSalesforce(action){
   const missing=[...new Set(queue.map(x=>x.accountCode).filter(c=>!mapping[c]))];
   if(missing.length)throw new Error("Missing account mapping for: "+missing.join(", "));
   const tab=await getActiveTab();
-  const response=await chrome.tabs.sendMessage(tab.id,{source:"timeentry-extension",action,queue,mapping});
+  const message={source:"timeentry-extension",action,queue,mapping};
+
+  const trySend=()=>chrome.tabs.sendMessage(tab.id,message);
+
+  let response;
+  try{
+    response=await trySend();
+  }catch(err){
+    const msg=String(err?.message||err||"");
+    if(!msg.toLowerCase().includes("receiving end does not exist") &&
+       !msg.toLowerCase().includes("could not establish connection")) throw err;
+
+    // The Salesforce tab was likely already open when the extension was reloaded.
+    // Inject the content script into the current tab and retry automatically.
+    await chrome.scripting.executeScript({
+      target:{tabId:tab.id},
+      files:["content.js"]
+    });
+    await new Promise(r=>setTimeout(r,250));
+    response=await trySend();
+  }
+
   if(!response?.ok)throw new Error(response?.error||"Salesforce transfer failed.");
   return response;
 }
