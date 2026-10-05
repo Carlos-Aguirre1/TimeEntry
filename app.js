@@ -26,6 +26,21 @@ let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartA
 
 function saved(){try{return JSON.parse(localStorage.getItem("timeentry-entries")||"[]")}catch(_){return[]}}
 function saveAll(data){localStorage.setItem("timeentry-entries",JSON.stringify(data))}
+function ensureTransferBaseline(){
+  if(localStorage.getItem("timeentry-transfer-baseline"))return;
+  const stamp=new Date().toISOString();
+  const data=saved().map(x=>({...x,transferredAt:x.transferredAt||stamp}));
+  saveAll(data);
+  localStorage.setItem("timeentry-transfer-baseline",stamp);
+}
+function pendingEntries(){return saved().filter(x=>!x.transferredAt)}
+function markTransferred(ids){
+  const set=new Set(ids);
+  const stamp=new Date().toISOString();
+  saveAll(saved().map(x=>set.has(x.id)?{...x,transferredAt:stamp}:x));
+  ensureTransferBaseline();
+renderHistory();
+}
 function todayISO(){const d=new Date(),off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)}
 function showOnly(id){["splashScreen","portfolioScreen","entryScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
 
@@ -91,7 +106,7 @@ function saveEntry(next){
   const data=saved();
   if(editingId){
     const i=data.findIndex(x=>x.id===editingId);
-    if(i>=0)data[i]={...data[i],...entry,updatedAt:new Date().toISOString()};
+    if(i>=0)data[i]={...data[i],...entry,updatedAt:new Date().toISOString(),transferredAt:null};
   }else{
     data.push({id:crypto.randomUUID?.()||String(Date.now()),timestamp:new Date().toISOString(),...entry});
   }
@@ -140,11 +155,14 @@ function deleteEntry(id){
  renderHistory();
  showSaveConfirmation("Entry deleted");
 }
-function buildTransferUrl(){
- const data=saved().map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
- if(!data.length)throw new Error("No saved entries to send");
- return location.origin+location.pathname.replace(/[^/]*$/,"")+"transfer.html#q="+encodeURIComponent(JSON.stringify(data));
+function buildTransferPackage(){
+ const entries=pendingEntries();
+ if(!entries.length)throw new Error("No new entries to send");
+ const compact=entries.map(({accountCode,date,type,hours,details})=>[accountCode,date,type,hours,details]);
+ const url=location.origin+location.pathname.replace(/[^/]*$/,"")+"transfer.html#q="+encodeURIComponent(JSON.stringify(compact));
+ return {url,ids:entries.map(x=>x.id),count:entries.length};
 }
+function buildTransferUrl(){return buildTransferPackage().url}
 function showTransferLink(url){
  const box=$("#transferLinkBox"),link=$("#transferLink");
  if(!box||!link)return;
@@ -153,21 +171,23 @@ function showTransferLink(url){
  box.classList.remove("hidden");
 }
 async function sendToLaptop(){
- let url;
- try{url=buildTransferUrl()}catch(e){showSaveConfirmation(e.message);return}
- showTransferLink(url);
+ let pack;
+ try{pack=buildTransferPackage()}catch(e){showSaveConfirmation(e.message);return}
+ showTransferLink(pack.url);
  try{
    if(navigator.share){
-     await navigator.share({title:"TimeEntry Transfer",text:"Open this link on your laptop to load the TimeEntry queue into the Chrome extension.",url});
-     showSaveConfirmation("Transfer link shared");
+     await navigator.share({title:"TimeEntry Transfer",text:"Open this link on your laptop to load the TimeEntry queue into the Chrome extension.",url:pack.url});
+     markTransferred(pack.ids);
+     showSaveConfirmation(pack.count+" new entr"+(pack.count===1?"y":"ies")+" shared");
      return;
    }
  }catch(err){
    if(err&&err.name==="AbortError")return;
  }
  try{
-   await navigator.clipboard.writeText(url);
-   showSaveConfirmation("Transfer link copied");
+   await navigator.clipboard.writeText(pack.url);
+   markTransferred(pack.ids);
+   showSaveConfirmation(pack.count+" new entr"+(pack.count===1?"y":"ies")+" copied");
  }catch(_){
    showSaveConfirmation("Transfer link ready below");
  }
@@ -275,7 +295,7 @@ $("#saveNextBtn").onclick=()=>saveEntry(true);
 $("#historyBtn").onclick=()=>{$("#history").classList.remove("hidden");renderHistory();$("#history").scrollIntoView({behavior:"smooth"})};
 $("#closeHistoryBtn").onclick=()=>$("#history").classList.add("hidden");
 $("#sendLaptopBtn").onclick=sendToLaptop;
-$("#copyTransferLinkBtn").onclick=async()=>{try{const url=buildTransferUrl();showTransferLink(url);await navigator.clipboard.writeText(url);showSaveConfirmation("Transfer link copied")}catch(e){showSaveConfirmation(e.message)}};
+$("#copyTransferLinkBtn").onclick=async()=>{try{const pack=buildTransferPackage();showTransferLink(pack.url);await navigator.clipboard.writeText(pack.url);markTransferred(pack.ids);showSaveConfirmation(pack.count+" new entr"+(pack.count===1?"y":"ies")+" copied")}catch(e){showSaveConfirmation(e.message)}};
 $("#copyJsonBtn").onclick=copyJson;
 $("#clearHistoryBtn").onclick=()=>{if(confirm("Clear all saved time entries?")){saveAll([]);renderHistory()}};
 $("#layoutToggle").onclick=e=>{const b=e.target.closest("button[data-layout]");if(!b)return;localStorage.setItem("timeentry-layout",b.dataset.layout);applyRosterLayout()};
