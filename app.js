@@ -1,0 +1,144 @@
+const customers=[
+{id:"BL",name:"BL",short:"BL",detail:"Customer code"},
+{id:"IS",name:"IS",short:"IS",detail:"Customer code"},
+{id:"HC",name:"HC",short:"HC",detail:"Customer code"},
+{id:"KI",name:"KI",short:"KI",detail:"Customer code"},
+{id:"TD",name:"TD",short:"TD",detail:"Customer code"},
+{id:"PS",name:"PS",short:"PS",detail:"Customer code"}
+];
+
+const types=[
+"Account Administration","Administration","Assisting Other Departments","Business Profile","Cadence Call",
+"Change Management – Implementation","Change Management – Planning","Consultation","DC/SOW Review",
+"Discovery Call/SoW","Documentation","ES Onboarding","Event","Feature Request Discussion","Health Check",
+"Initiative","Meeting","Mentoring","One-on-One","Other","P1/Escalation","QBR","Release Manifest Testing",
+"Research","SME Activity","Internal Sync","Training","Troubleshooting","Webinars","Work Order","Special Initiative"
+];
+
+const $=s=>document.querySelector(s);
+let activeCustomer=null;
+let selectedHours=1;
+let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
+
+function saved(){try{return JSON.parse(localStorage.getItem("timeentry-entries")||"[]")}catch(_){return[]}}
+function saveAll(data){localStorage.setItem("timeentry-entries",JSON.stringify(data))}
+function todayISO(){const d=new Date(),off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)}
+function showOnly(id){["splashScreen","portfolioScreen","entryScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
+
+function customerBadge(c){return '<span class="player-photo customer-avatar"><strong>'+c.short+'</strong></span>'}
+function renderPortfolio(){
+  $("#portfolioProgress").textContent=customers.length+" accounts";
+  $("#customerGrid").innerHTML=customers.map(c=>`<button type="button" class="player-tile" data-id="${c.id}">${customerBadge(c)}<span class="jersey">ACCOUNT</span><strong>${c.short}</strong><span class="status-label">Tap to enter time</span></button>`).join("");
+  $("#customerGrid").querySelectorAll(".player-tile").forEach(b=>b.onclick=()=>{if(wheelMoved){wheelMoved=false;return}openCustomer(b.dataset.id)});
+  applyRosterLayout();
+}
+function openCustomer(id){
+  activeCustomer=customers.find(c=>c.id===id);
+  selectedHours=1;
+  $("#activeCustomerName").textContent=activeCustomer.short;
+  $("#activeCustomerDetail").textContent="Customer code";
+  $("#entryDate").value=todayISO();
+  $("#entryType").value="Meeting";
+  $("#entryDetails").value="";
+  $("#message").textContent="";
+  renderHours();
+  showOnly("entryScreen");
+}
+function showPortfolio(){activeCustomer=null;showOnly("portfolioScreen");renderPortfolio()}
+
+function renderHours(){
+  const values=[0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8];
+  $("#hoursGrid").innerHTML=values.map(v=>`<button type="button" class="hour-chip ${v===selectedHours?"active":""}" data-hours="${v}">${v} h</button>`).join("");
+  $("#hoursGrid").querySelectorAll(".hour-chip").forEach(b=>b.onclick=()=>{selectedHours=Number(b.dataset.hours);renderHours()});
+  $("#hoursValue").textContent=selectedHours.toFixed(1)+" h";
+}
+function changeHours(delta){selectedHours=Math.max(0.5,Math.min(24,Math.round((selectedHours+delta)*2)/2));renderHours()}
+
+function buildEntry(){
+ return {
+   accountCode:activeCustomer.id,
+   date:$("#entryDate").value||todayISO(),
+   type:$("#entryType").value,
+   hours:selectedHours,
+   details:$("#entryDetails").value.trim()
+ };
+}
+function saveEntry(next){
+  if(!activeCustomer)return;
+  const entry=buildEntry();
+  if(!entry.type){$("#message").textContent="Choose a Type.";return}
+  if(!entry.details){$("#message").textContent="Add Details.";return}
+  const data=saved();
+  data.push({id:crypto.randomUUID?.()||String(Date.now()),timestamp:new Date().toISOString(),...entry});
+  saveAll(data);
+  renderHistory();
+  $("#message").textContent="Saved ✓";
+  if(next)setTimeout(showPortfolio,180);
+}
+function renderHistory(){
+ const data=saved(); $("#savedCount").textContent=data.length;
+ $("#historyList").innerHTML=data.length?data.slice().reverse().map(x=>`<div class="saved-row"><div><strong>${x.accountCode}</strong><small>${x.date} • ${x.type} • ${Number(x.hours).toFixed(1)} h</small><span>${x.details}</span></div></div>`).join(""):"<p>No time entries saved yet.</p>";
+ const queue=data.map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
+ $("#jsonPreview").textContent=JSON.stringify(queue,null,2);
+}
+async function copyJson(){
+ const data=saved().map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
+ const text=JSON.stringify(data,null,2);
+ try{await navigator.clipboard.writeText(text);alert("JSON queue copied.")}catch(_){prompt("Copy JSON queue:",text)}
+}
+
+function applyRosterLayout(){
+ const mode=localStorage.getItem("timeentry-layout")==="wheel"?"wheel":"grid",grid=$("#customerGrid"),toggle=$("#layoutToggle");
+ toggle?.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.layout===mode));
+ if(!grid)return;
+ grid.classList.toggle("wheel-layout",mode==="wheel");
+ if(mode==="wheel")setupRadialWheel();else{grid.classList.remove("wheel-active","wheel-left");grid.style.removeProperty("--wheel-angle")}
+}
+function setupRadialWheel(){
+ const grid=$("#customerGrid"); if(!grid)return;
+ grid.classList.toggle("wheel-left",(localStorage.getItem("timeentry-wheel-hand")||"right")==="left");
+ grid.style.setProperty("--wheel-angle",wheelAngle+"deg");
+ let hub=$("#wheelHub");
+ if(!hub){hub=document.createElement("button");hub.type="button";hub.id="wheelHub";hub.className="wheel-hub";hub.innerHTML='<span class="hub-mark">TE</span><strong>Customers</strong><small>Tap to spin</small>';grid.appendChild(hub)}
+ let throttle=$("#wheelThrottle");
+ if(!throttle){throttle=document.createElement("div");throttle.id="wheelThrottle";throttle.className="wheel-throttle";throttle.innerHTML='<span class="throttle-arrow">▲</span><span class="throttle-fast">FASTER</span><div class="throttle-track"><span class="throttle-knob"></span><span class="throttle-zero"></span></div><span class="throttle-fast">FASTER</span><span class="throttle-arrow">▼</span>';grid.appendChild(throttle)}
+ let hand=$("#wheelHand");
+ if(!hand){hand=document.createElement("button");hand.type="button";hand.id="wheelHand";hand.className="wheel-hand";grid.appendChild(hand)}
+ const handMode=localStorage.getItem("timeentry-wheel-hand")||"right";
+ hand.textContent=handMode==="right"?"Right hand →":"← Left hand";
+ hand.onclick=e=>{e.stopPropagation();localStorage.setItem("timeentry-wheel-hand",handMode==="right"?"left":"right");setupRadialWheel()};
+ hub.onclick=e=>{e.preventDefault();e.stopPropagation();wheelActive=!wheelActive;grid.classList.toggle("wheel-active",wheelActive);hub.querySelector("small").textContent=wheelActive?"ACTIVE • spin":"Tap to spin"};
+ grid.querySelectorAll(".player-tile").forEach((b,i)=>{b.style.setProperty("--i",i);b.style.setProperty("--n",customers.length)});
+ if(throttle&&!throttle.dataset.bound){
+   throttle.dataset.bound="1";
+   const knob=throttle.querySelector(".throttle-knob"),track=throttle.querySelector(".throttle-track");
+   let raf=0,speed=0,last=0,drag=false;
+   const paint=y=>{const r=track.getBoundingClientRect(),mid=r.top+r.height/2,half=r.height/2-12,off=Math.max(-half,Math.min(half,y-mid));knob.style.transform="translate(-50%,"+off+"px)";speed=(-off/half)*1.7*(grid.classList.contains("wheel-left")?-1:1);if(!raf){last=performance.now();const tick=t=>{const dt=Math.min(32,t-last);last=t;if(Math.abs(speed)>.02){wheelAngle+=speed*dt*.12;grid.style.setProperty("--wheel-angle",wheelAngle+"deg")}raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick)}};
+   const stop=()=>{drag=false;speed=0;knob.style.transform="translate(-50%,0px)";if(raf){cancelAnimationFrame(raf);raf=0}};
+   throttle.addEventListener("pointerdown",e=>{drag=true;throttle.setPointerCapture?.(e.pointerId);paint(e.clientY);e.preventDefault();e.stopPropagation()},{passive:false});
+   throttle.addEventListener("pointermove",e=>{if(!drag)return;paint(e.clientY);e.preventDefault();e.stopPropagation()},{passive:false});
+   throttle.addEventListener("pointerup",stop); throttle.addEventListener("pointercancel",stop);
+ }
+ if(!grid.dataset.wheelBound){
+   grid.dataset.wheelBound="1";
+   grid.addEventListener("pointerdown",e=>{if(!wheelActive||e.target.closest("#wheelHub,#wheelHand,#wheelThrottle"))return;wheelDragging=true;wheelMoved=false;wheelStartY=e.clientY;wheelStartAngle=wheelAngle;grid.setPointerCapture?.(e.pointerId);e.preventDefault()},{passive:false});
+   grid.addEventListener("pointermove",e=>{if(!wheelDragging)return;const dy=e.clientY-wheelStartY;if(Math.abs(dy)>7)wheelMoved=true;wheelAngle=wheelStartAngle+dy*.38*(grid.classList.contains("wheel-left")?-1:1);grid.style.setProperty("--wheel-angle",wheelAngle+"deg");e.preventDefault()},{passive:false});
+   const stop=e=>{if(!wheelDragging)return;wheelDragging=false;try{grid.releasePointerCapture?.(e.pointerId)}catch(_){}};
+   grid.addEventListener("pointerup",stop);grid.addEventListener("pointercancel",stop);
+   grid.addEventListener("click",e=>{if(wheelMoved){e.preventDefault();e.stopPropagation();wheelMoved=false}},true);
+ }
+}
+
+$("#entryType").innerHTML='<option value="">--None--</option>'+types.map(t=>'<option>'+t+'</option>').join("");
+$("#enterAppBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
+$("#backBtn").onclick=showPortfolio;
+$("#hoursMinus").onclick=()=>changeHours(-0.5);
+$("#hoursPlus").onclick=()=>changeHours(0.5);
+$("#saveBtn").onclick=()=>saveEntry(false);
+$("#saveNextBtn").onclick=()=>saveEntry(true);
+$("#historyBtn").onclick=()=>{$("#history").classList.remove("hidden");renderHistory();$("#history").scrollIntoView({behavior:"smooth"})};
+$("#closeHistoryBtn").onclick=()=>$("#history").classList.add("hidden");
+$("#copyJsonBtn").onclick=copyJson;
+$("#clearHistoryBtn").onclick=()=>{if(confirm("Clear all saved time entries?")){saveAll([]);renderHistory()}};
+$("#layoutToggle").onclick=e=>{const b=e.target.closest("button[data-layout]");if(!b)return;localStorage.setItem("timeentry-layout",b.dataset.layout);applyRosterLayout()};
+renderHistory();
