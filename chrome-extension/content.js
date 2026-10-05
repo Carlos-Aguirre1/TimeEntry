@@ -93,58 +93,64 @@ async function setAccount(accountName){
   if(accepted())return;
 
   // Advanced lookup results grid fallback.
-  // User-confirmed workflow: choose the first result row, then click Select.
-  for(let wait=0;wait<20;wait++){
+  // Scope to the visible Advanced Search dialog, select the matching/first result radio,
+  // then click the bottom-right Select button.
+  for(let wait=0;wait<24;wait++){
     await sleep(220);
 
-    const rows=[...document.querySelectorAll('tr,[role="row"],.slds-table tbody tr')]
+    const dialogs=[...document.querySelectorAll('[role="dialog"],.slds-modal,.modal-container')]
+      .filter(visible);
+    const dialog=dialogs.find(d=>norm(d.innerText||d.textContent).includes("advanced search"))
+      || dialogs.find(d=>norm(d.innerText||d.textContent).includes(norm(accountName)))
+      || document;
+
+    const rows=[...dialog.querySelectorAll('tbody tr,[role="row"]')]
       .filter(visible)
       .filter(r=>{
         const t=norm(r.innerText||r.textContent);
         return t && !t.includes("account name") && !t.includes("billing city");
       });
 
-    if(rows.length){
-      const firstRow=rows[0];
-      const radio=firstRow.querySelector(
-        'input[type="radio"],[role="radio"],label,.slds-radio_faux'
-      );
-      const firstCell=firstRow.querySelector('td,[role="gridcell"]');
+    const row=rows.find(r=>norm(r.innerText||r.textContent).includes(norm(accountName))) || rows[0];
 
-      const clickLikeUser=(el)=>{
-        if(!el)return;
-        const r=el.getBoundingClientRect();
-        const x=r.left+Math.min(Math.max(10,r.width*.15),24);
-        const y=r.top+r.height/2;
-        for(const type of ["pointerdown","mousedown","pointerup","mouseup","click"]){
-          const C=type.startsWith("pointer")?PointerEvent:MouseEvent;
-          el.dispatchEvent(new C(type,{
-            bubbles:true,composed:true,clientX:x,clientY:y,
-            button:0,buttons:type.includes("down")?1:0
-          }));
-        }
-      };
+    if(row){
+      const radio=row.querySelector('input[type="radio"]');
+      const radioLabel=radio && radio.id ? dialog.querySelector('label[for="'+CSS.escape(radio.id)+'"]') : null;
+      const faux=row.querySelector('.slds-radio_faux,[role="radio"]');
 
-      clickLikeUser(radio||firstCell||firstRow);
-      if(radio&&radio.tagName==="INPUT"){
+      if(radio){
+        radio.scrollIntoView({block:"center"});
+        radio.focus();
+        radio.click();
         radio.checked=true;
         fire(radio,"input");
         fire(radio,"change");
+        radio.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:" ",code:"Space"}));
+        radio.dispatchEvent(new KeyboardEvent("keyup",{bubbles:true,key:" ",code:"Space"}));
       }
-      if(firstCell)clickLikeUser(firstCell);
-      clickLikeUser(firstRow);
+      if(radioLabel)radioLabel.click();
+      if(faux)faux.click();
 
-      // Wait for the bottom-right Select button to become enabled.
+      // Coordinate fallback on the visible radio circle in the first column.
+      const rr=row.getBoundingClientRect();
+      const x=rr.left+14;
+      const y=rr.top+rr.height/2;
+      const atPoint=document.elementFromPoint(x,y);
+      if(atPoint){
+        atPoint.dispatchEvent(new MouseEvent("mousedown",{bubbles:true,composed:true,clientX:x,clientY:y,button:0}));
+        atPoint.dispatchEvent(new MouseEvent("mouseup",{bubbles:true,composed:true,clientX:x,clientY:y,button:0}));
+        atPoint.dispatchEvent(new MouseEvent("click",{bubbles:true,composed:true,clientX:x,clientY:y,button:0}));
+      }
+
+      // Wait for the bottom-right Select button to enable.
       for(let i=0;i<20;i++){
         await sleep(180);
-        const buttons=[...document.querySelectorAll("button")].filter(visible);
-        const selectBtn=buttons.find(b=>{
-          const t=norm(b.innerText||b.textContent);
-          return t==="select" && !b.disabled && b.getAttribute("aria-disabled")!=="true";
-        });
-        if(selectBtn){
+        const buttons=[...dialog.querySelectorAll("button")].filter(visible);
+        const selectBtn=buttons.find(b=>norm(b.innerText||b.textContent)==="select")
+          || [...document.querySelectorAll("button")].filter(visible).find(b=>norm(b.innerText||b.textContent)==="select");
+        if(selectBtn && !selectBtn.disabled && selectBtn.getAttribute("aria-disabled")!=="true"){
           selectBtn.click();
-          await sleep(900);
+          await sleep(1000);
           if(accepted())return;
           break;
         }
