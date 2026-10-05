@@ -253,14 +253,13 @@ chrome.runtime.onMessage.addListener((msg,_sender,sendResponse)=>{
       }
       if(msg.action==="fillSaveNew"){
         const cursor=Math.max(0,Math.min(Number(msg.cursor||0),msg.queue.length-1));
-        const message=await fillEntry(msg.queue[cursor],msg.mapping);
-        await clickSaveNew();
-        if(cursor<msg.queue.length-1){
-          await waitForNewForm();
-          await fillEntry(msg.queue[cursor+1],msg.mapping);
-          return {ok:true,message:message+". Saved. Next entry filled and ready for review.",nextCursor:cursor+1};
-        }
-        return {ok:true,message:message+". Saved. Queue complete.",nextCursor:msg.queue.length};
+        const remaining=msg.queue.slice(cursor);
+        const message=await runQueue(remaining,msg.mapping);
+        return {
+          ok:true,
+          message:message+". Final Save & New clicked; a blank New Time Tracking form should remain open.",
+          nextCursor:msg.queue.length
+        };
       }
       if(msg.action==="runQueue"){
         const cursor=Math.max(0,Math.min(Number(msg.cursor||0),msg.queue.length-1));
