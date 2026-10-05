@@ -119,3 +119,7 @@ button:disabled{opacity:.55;cursor:default}
 #customerGrid.wheel-layout.speed-med .throttle-knob{box-shadow:0 0 0 8px rgba(217,173,49,.16),0 4px 12px rgba(0,0,0,.24)}
 #customerGrid.wheel-layout.speed-high .throttle-knob{box-shadow:0 0 0 11px rgba(217,173,49,.22),0 5px 16px rgba(0,0,0,.26)}
 }
+
+.history-actions{flex-wrap:wrap}
+.history-actions #sendLaptopBtn{flex:1 1 100%}
+.history-actions #copyJsonBtn,.history-actions #clearHistoryBtn{flex:1 1 46%}
