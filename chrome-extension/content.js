@@ -49,48 +49,67 @@ async function selectPicklist(label,value){
 async function setAccount(accountName){
   const el=fieldByLabel("Account");
   if(!el)throw new Error("Could not find Salesforce Account lookup.");
-  el.focus();
-  setNativeValue(el,accountName);
-  await sleep(900);
 
-  const optionSelectors='[role="option"],lightning-base-combobox-item,.slds-listbox__option';
-  const options=[...document.querySelectorAll(optionSelectors)].filter(visible);
-  let opt=options.find(o=>norm(o.innerText||o.textContent).includes(norm(accountName)));
-  if(opt){
-    opt.click();
-    await sleep(500);
-    return;
+  const container=el.closest(".slds-form-element,records-record-layout-item")||el.parentElement;
+  const accepted=()=>{
+    const text=norm(container?.innerText||"");
+    const pill=container?.querySelector('.slds-pill,button[title*="Remove"],button[aria-label*="Remove"]');
+    return !!pill && text.includes(norm(accountName));
+  };
+
+  el.focus();
+  setNativeValue(el,"");
+  await sleep(120);
+  setNativeValue(el,accountName);
+
+  // Wait for Salesforce lookup results to render, then click the matching suggestion.
+  for(let attempt=0;attempt<12;attempt++){
+    await sleep(180);
+    const candidates=[...document.querySelectorAll(
+      '[role="option"],lightning-base-combobox-item,.slds-listbox__option,.slds-listbox__item,li'
+    )].filter(visible);
+    const match=candidates.find(o=>{
+      const t=norm(o.innerText||o.textContent);
+      return t.includes(norm(accountName)) && !t.startsWith("show more results");
+    });
+    if(match){
+      const clickTarget=match.querySelector(
+        'a,button,[role="option"],.slds-media,.slds-listbox__option-text,.slds-listbox__option'
+      )||match;
+      clickTarget.dispatchEvent(new MouseEvent("mousedown",{bubbles:true,composed:true}));
+      clickTarget.dispatchEvent(new MouseEvent("mouseup",{bubbles:true,composed:true}));
+      clickTarget.click();
+      await sleep(700);
+      if(accepted())return;
+    }
   }
 
-  // Salesforce may open the Advanced lookup results grid instead of a normal combobox list.
+  // Keyboard fallback for standard lookup suggestions.
+  el.focus();
+  el.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"ArrowDown"}));
+  await sleep(180);
+  el.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"Enter"}));
+  await sleep(700);
+  if(accepted())return;
+
+  // Advanced lookup results grid fallback.
   const rows=[...document.querySelectorAll('tr,[role="row"],.slds-table tbody tr')].filter(visible);
-  const exactRow=rows.find(r=>norm(r.innerText||r.textContent).includes(norm(accountName)));
-  if(exactRow){
-    const radio=exactRow.querySelector('input[type="radio"],input[type="checkbox"]');
-    if(radio){
-      radio.click();
-      fire(radio,"change");
-    }else{
-      const clickable=exactRow.querySelector('a,button,[role="gridcell"]')||exactRow;
-      clickable.click();
-    }
+  const row=rows.find(r=>norm(r.innerText||r.textContent).includes(norm(accountName)));
+  if(row){
+    const radio=row.querySelector('input[type="radio"],input[type="checkbox"]');
+    const target=radio||row.querySelector('a,button,[role="gridcell"]')||row;
+    target.click();
+    if(radio)fire(radio,"change");
     await sleep(300);
     const selectBtn=[...document.querySelectorAll("button")].filter(visible).find(b=>{
       const t=norm(b.innerText||b.textContent);
       return t==="select"||t==="done";
     });
-    if(selectBtn){
-      selectBtn.click();
-      await sleep(600);
-    }
-    return;
+    if(selectBtn){selectBtn.click();await sleep(700);}
+    if(accepted())return;
   }
 
-  // Final keyboard fallback for simple lookup menus.
-  el.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"ArrowDown"}));
-  await sleep(250);
-  el.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"Enter"}));
-  await sleep(500);
+  throw new Error('Salesforce found "'+accountName+'" but the extension could not select the lookup result.');
 }
 async function fillEntry(entry,mapping){
   const accountName=mapping[entry.accountCode];
