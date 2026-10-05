@@ -52,16 +52,45 @@ async function setAccount(accountName){
   el.focus();
   setNativeValue(el,accountName);
   await sleep(900);
-  const options=[...document.querySelectorAll('[role="option"],lightning-base-combobox-item,.slds-listbox__option')].filter(visible);
+
+  const optionSelectors='[role="option"],lightning-base-combobox-item,.slds-listbox__option';
+  const options=[...document.querySelectorAll(optionSelectors)].filter(visible);
   let opt=options.find(o=>norm(o.innerText||o.textContent).includes(norm(accountName)));
-  if(!opt){
-    el.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"ArrowDown"}));
-    await sleep(250);
-    el.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"Enter"}));
-    await sleep(400);
+  if(opt){
+    opt.click();
+    await sleep(500);
     return;
   }
-  opt.click();await sleep(400);
+
+  // Salesforce may open the Advanced lookup results grid instead of a normal combobox list.
+  const rows=[...document.querySelectorAll('tr,[role="row"],.slds-table tbody tr')].filter(visible);
+  const exactRow=rows.find(r=>norm(r.innerText||r.textContent).includes(norm(accountName)));
+  if(exactRow){
+    const radio=exactRow.querySelector('input[type="radio"],input[type="checkbox"]');
+    if(radio){
+      radio.click();
+      fire(radio,"change");
+    }else{
+      const clickable=exactRow.querySelector('a,button,[role="gridcell"]')||exactRow;
+      clickable.click();
+    }
+    await sleep(300);
+    const selectBtn=[...document.querySelectorAll("button")].filter(visible).find(b=>{
+      const t=norm(b.innerText||b.textContent);
+      return t==="select"||t==="done";
+    });
+    if(selectBtn){
+      selectBtn.click();
+      await sleep(600);
+    }
+    return;
+  }
+
+  // Final keyboard fallback for simple lookup menus.
+  el.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"ArrowDown"}));
+  await sleep(250);
+  el.dispatchEvent(new KeyboardEvent("keydown",{bubbles:true,key:"Enter"}));
+  await sleep(500);
 }
 async function fillEntry(entry,mapping){
   const accountName=mapping[entry.accountCode];
