@@ -138,6 +138,28 @@ function deleteEntry(id){
  renderHistory();
  showSaveConfirmation("Entry deleted");
 }
+async function sendToLaptop(){
+ const data=saved().map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
+ if(!data.length){showSaveConfirmation("No saved entries to send");return}
+ const text=JSON.stringify(data,null,2);
+ const shareText="TimeEntry queue\n\n"+text;
+ try{
+   if(navigator.share){
+     await navigator.share({title:"TimeEntry Queue",text:shareText});
+     showSaveConfirmation("Share sheet opened");
+     return;
+   }
+ }catch(err){
+   if(err&&err.name==="AbortError")return;
+ }
+ try{
+   await navigator.clipboard.writeText(text);
+   showSaveConfirmation("Queue copied — paste on laptop");
+ }catch(_){
+   prompt("Copy this queue and paste it into the laptop extension:",text);
+ }
+}
+
 async function copyJson(){
  const data=saved().map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
  const text=JSON.stringify(data,null,2);
@@ -240,6 +262,7 @@ $("#saveBtn").onclick=()=>saveEntry(false);
 $("#saveNextBtn").onclick=()=>saveEntry(true);
 $("#historyBtn").onclick=()=>{$("#history").classList.remove("hidden");renderHistory();$("#history").scrollIntoView({behavior:"smooth"})};
 $("#closeHistoryBtn").onclick=()=>$("#history").classList.add("hidden");
+$("#sendLaptopBtn").onclick=sendToLaptop;
 $("#copyJsonBtn").onclick=copyJson;
 $("#clearHistoryBtn").onclick=()=>{if(confirm("Clear all saved time entries?")){saveAll([]);renderHistory()}};
 $("#layoutToggle").onclick=e=>{const b=e.target.closest("button[data-layout]");if(!b)return;localStorage.setItem("timeentry-layout",b.dataset.layout);applyRosterLayout()};
