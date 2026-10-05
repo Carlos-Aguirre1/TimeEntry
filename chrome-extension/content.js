@@ -102,18 +102,36 @@ async function setAccount(accountName){
       );
       const firstCell=row.querySelector('td,[role="gridcell"]');
       const target=selector||firstCell||row;
-      target.dispatchEvent(new MouseEvent("mousedown",{bubbles:true,composed:true}));
-      target.dispatchEvent(new MouseEvent("mouseup",{bubbles:true,composed:true}));
-      target.click();
+
+      const clickLikeUser=(el)=>{
+        if(!el)return;
+        const r=el.getBoundingClientRect();
+        const x=r.left+Math.min(Math.max(12,r.width*.18),28);
+        const y=r.top+r.height/2;
+        for(const type of ["pointerdown","mousedown","pointerup","mouseup","click"]){
+          const C=type.startsWith("pointer")?PointerEvent:MouseEvent;
+          el.dispatchEvent(new C(type,{bubbles:true,composed:true,clientX:x,clientY:y,button:0,buttons:type.includes("down")?1:0}));
+        }
+      };
+
+      clickLikeUser(target);
       if(selector&&selector.tagName==="INPUT"){
         selector.checked=true;
         fire(selector,"input");
         fire(selector,"change");
       }
 
-      // Some Salesforce tables react to clicking the whole first cell/row.
-      if(firstCell&&firstCell!==target)firstCell.click();
-      row.dispatchEvent(new MouseEvent("click",{bubbles:true,composed:true}));
+      // Salesforce Advanced Search sometimes only responds to a click on the visible
+      // radio circle in the first column rather than the row's hidden input.
+      const rr=row.getBoundingClientRect();
+      const radioX=rr.left+14;
+      const radioY=rr.top+rr.height/2;
+      const visibleRadio=document.elementFromPoint(radioX,radioY);
+      clickLikeUser(visibleRadio);
+
+      // Also click the first cell/row as a final selection nudge.
+      if(firstCell)clickLikeUser(firstCell);
+      clickLikeUser(row);
 
       // Wait for Select to become enabled, then commit the lookup choice.
       for(let i=0;i<12;i++){
