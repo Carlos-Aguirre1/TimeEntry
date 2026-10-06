@@ -9,7 +9,8 @@ const customers=[
 {id:"CPF",name:"CPF",short:"CPF",detail:"Customer code"},
 {id:"MAN",name:"MAN",short:"MAN",detail:"Customer code"},
 {id:"CB",name:"CB",short:"CB",detail:"Customer code"},
-{id:"RB",name:"RB",short:"RB",detail:"Customer code"}
+{id:"RB",name:"RB",short:"RB",detail:"Customer code"},
+{id:"8F",name:"8F",short:"8F",detail:"Customer code"}
 ];
 
 const types=[
