@@ -89,7 +89,9 @@ document.addEventListener("DOMContentLoaded",async()=>{
     BHC:"Baptist Health Care",
     CPF:"CHAMPION PETFOODS HOLDING INC.",
     MAN:"MANITOULIN TRANSPORT",
-    CB:"Cleaver-Brooks"
+    CB:"Cleaver-Brooks",
+    RB:"Roseburg Forest Products",
+    8F:"1-800-Flowers.com"
   };
   // Merge new defaults into any existing locally saved mapping so newly added
   // customer codes appear automatically without overwriting custom mappings.
