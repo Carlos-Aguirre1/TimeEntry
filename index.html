@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=29">
+<link rel="stylesheet" href="styles.css?v=30">
 </head>
 <body>
 <header>
@@ -183,6 +183,11 @@
       <div><h2>Saved time entries</h2><small>CRM-ready queue</small></div>
       <button id="closeHistoryBtn" class="ghost">Close</button>
     </div>
+    <div class="saved-kpis">
+      <div><strong id="savedTodayHours">0.0</strong><span>today</span></div>
+      <div><strong id="savedWeekHours">0.0</strong><span>this week</span></div>
+      <div><strong id="savedTotalHours">0.0</strong><span>saved total</span></div>
+    </div>
     <div id="historyList"></div>
     <div class="history-actions">
       <button id="sendLaptopBtn" class="primary">Send New Entries to Laptop</button>
@@ -195,6 +200,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=29"></script>
+<script src="app.js?v=30"></script>
 </body>
 </html>
