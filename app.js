@@ -29,6 +29,7 @@ let saveLocked=false;
 let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
 let historicalFilter="missing";
 let catchupContext=null;
+const expandedHistoricalDays=new Set();
 
 const historicalSubmitted={
   "2026-09-21":{hours:7,breakdown:{OT:7}},
@@ -48,6 +49,63 @@ const historicalSubmitted={
   "2026-10-09":{hours:.5,breakdown:{PS:.5}},
   "2026-10-12":{hours:.5,breakdown:{PS:.5}},
   "2026-10-13":{hours:.5,breakdown:{PS:.5}}
+};
+
+const historicalDetails={
+  "2026-09-21":[
+    {accountCode:"OT",type:"Other",hours:7,details:"Travelling to onsite QBR"}
+  ],
+  "2026-09-22":[
+    {accountCode:"OT",type:"QBR",hours:7,details:"Walk through of data center and delivered QBR onsite."}
+  ],
+  "2026-09-23":[
+    {accountCode:"OT",type:"Other",hours:7,details:"Travelling back from QBR onsite."}
+  ],
+  "2026-09-24":[
+    {accountCode:"PS",type:"Xsight",hours:7,details:"Continued working on XSight"}
+  ],
+  "2026-09-25":[
+    {accountCode:"PS",type:"Xsight",hours:7,details:"Continued working on XSight web engine"}
+  ],
+  "2026-09-29":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meeting"},
+    {accountCode:"KI",type:"Other",hours:1,details:"Raja (customer) is ready to proceed with the migration of 30 of his devices into the new environment."}
+  ],
+  "2026-10-01":[
+    {accountCode:"IS",type:"Troubleshooting",hours:2.5,details:"Continue assisting Jeff and Michael with attempting to identify the slowness to the profile."},
+    {accountCode:"IS",type:"Troubleshooting",hours:3,details:"Assisting Jeff and Michael with a profile download issue at the Tifton distribution centre."}
+  ],
+  "2026-10-02":[
+    {accountCode:"BL",type:"Meeting",hours:1,details:"Reviewing recording, as I was not able to attend"},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Morning meeting with the team Anu."}
+  ],
+  "2026-10-05":[
+    {accountCode:"MAN",type:"Troubleshooting",hours:1,details:"Working with Jamal on updating devices time zone via mx config."},
+    {accountCode:"BHC",type:"Meeting",hours:.5,details:"Reviewing account and preparing account for transition to TAM"},
+    {accountCode:"CPF",type:"Meeting",hours:1,details:"Spent time updating new TAM accounts"},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team meeting"}
+  ],
+  "2026-10-06":[
+    {accountCode:"PS",type:"Meeting",hours:1.5,details:"Meeting with Michael to discuss DoorDash"},
+    {accountCode:"PS",type:"Other",hours:3.5,details:"Continue working on maturity model."},
+    {accountCode:"RB",type:"Cadence Call",hours:1.5,details:"Prepping for cadence call and attending customer call with Nick and Mark."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meeting"}
+  ],
+  "2026-10-07":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning Meeting"}
+  ],
+  "2026-10-08":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning Meeting"}
+  ],
+  "2026-10-09":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning Meeting"}
+  ],
+  "2026-10-12":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team meeting with the Anu team"}
+  ],
+  "2026-10-13":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu meeting"}
+  ]
 };
 
 function saved(){try{return JSON.parse(localStorage.getItem("timeentry-entries")||"[]")}catch(_){return[]}}
@@ -279,9 +337,10 @@ function formatHistoryDate(iso){
 function queuedByDate(){
   const out={};
   for(const x of pendingEntries()){
-    if(!out[x.date])out[x.date]={hours:0,breakdown:{}};
+    if(!out[x.date])out[x.date]={hours:0,breakdown:{},entries:[]};
     out[x.date].hours+=Number(x.hours)||0;
     out[x.date].breakdown[x.accountCode]=(out[x.date].breakdown[x.accountCode]||0)+(Number(x.hours)||0);
+    out[x.date].entries.push(x);
   }
   return out;
 }
@@ -296,7 +355,11 @@ function historicalRows(){
     const remaining=Math.max(0,7-effective);
     const breakdown={...base.breakdown};
     for(const [code,hours] of Object.entries(q.breakdown||{}))breakdown[code]=(breakdown[code]||0)+hours;
-    return {date,submitted,queued:queuedHours,effective,remaining,breakdown,complete:effective>=7};
+    return {
+      date,submitted,queued:queuedHours,effective,remaining,breakdown,complete:effective>=7,
+      submittedEntries:historicalDetails[date]||[],
+      queuedEntries:q.entries||[]
+    };
   });
 }
 function renderHistorical(){
@@ -318,10 +381,33 @@ function renderHistorical(){
       ? '<span class="history-status complete">Complete ✓</span>'
       : '<span class="history-status missing">'+r.remaining.toFixed(1)+' h missing</span>';
     const queued=r.queued>0?'<small class="queued-note">'+r.queued.toFixed(1)+' h queued in Fast Entry</small>':"";
+    const expanded=expandedHistoricalDays.has(r.date);
+
+    const submittedLines=r.submittedEntries.map(x=>
+      '<div class="history-detail-row">'+
+        '<div class="history-detail-main"><strong>'+x.accountCode+'</strong><span>'+x.type+' • '+Number(x.hours).toFixed(1)+' h</span></div>'+
+        '<p>'+x.details+'</p>'+
+      '</div>'
+    ).join("");
+
+    const queuedLines=r.queuedEntries.map(x=>
+      '<div class="history-detail-row queued-detail">'+
+        '<div class="history-detail-main"><strong>'+x.accountCode+'</strong><span>'+x.type+' • '+Number(x.hours).toFixed(1)+' h • QUEUED</span></div>'+
+        '<p>'+x.details+'</p>'+
+        '<button type="button" class="history-edit-queued" data-edit-queued="'+x.id+'">Edit queued entry</button>'+
+      '</div>'
+    ).join("");
+
+    const detailsContent=(submittedLines||queuedLines)
+      ? (submittedLines+queuedLines)
+      : '<p class="history-no-details">No submitted details for this date.</p>';
+
     return '<article class="history-day '+(r.complete?"is-complete":"is-missing")+'">'+
       '<div class="history-day-top"><div><strong>'+formatHistoryDate(r.date)+'</strong><small>'+r.submitted.toFixed(1)+' submitted • '+r.effective.toFixed(1)+' / 7.0 h including queue</small></div>'+status+'</div>'+
       '<div class="history-breakdown">'+(chips||'<span class="history-chip empty">No submitted time</span>')+'</div>'+
       queued+
+      '<button type="button" class="history-view-details" data-history-toggle="'+r.date+'">'+(expanded?'Hide details':'View details')+'</button>'+
+      '<div class="history-details '+(expanded?'':'hidden')+'">'+detailsContent+'</div>'+
       (!r.complete?'<button type="button" class="primary history-add" data-history-date="'+r.date+'" data-history-remaining="'+r.remaining+'">Add Missing Time • '+r.remaining.toFixed(1)+' h</button>':"")+
     '</article>';
   }).join(""):'<p class="empty-history">No days in this view.</p>';
@@ -330,6 +416,16 @@ function renderHistorical(){
     catchupContext={date:b.dataset.historyDate,remaining:Number(b.dataset.historyRemaining)};
     showOnly("portfolioScreen");
     renderPortfolio();
+  });
+  $("#historicalList")?.querySelectorAll("[data-history-toggle]").forEach(b=>b.onclick=()=>{
+    const date=b.dataset.historyToggle;
+    if(expandedHistoricalDays.has(date))expandedHistoricalDays.delete(date);
+    else expandedHistoricalDays.add(date);
+    renderHistorical();
+  });
+  $("#historicalList")?.querySelectorAll("[data-edit-queued]").forEach(b=>b.onclick=()=>{
+    catchupContext=null;
+    editEntry(b.dataset.editQueued);
   });
 }
 function openHistorical(){
