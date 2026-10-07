@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded",async()=>{
     MAN:"MANITOULIN TRANSPORT",
     CB:"Cleaver-Brooks",
     RB:"Roseburg Forest Products",
-    8F:"1-800-Flowers.com"
+    "8F":"1-800-Flowers.com"
   };
   // Merge new defaults into any existing locally saved mapping so newly added
   // customer codes appear automatically without overwriting custom mappings.
