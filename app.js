@@ -145,7 +145,7 @@ function markTransferred(ids){
 renderHistory();
 }
 function todayISO(){const d=new Date(),off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)}
-function showOnly(id){["splashScreen","portfolioScreen","entryScreen","historicalScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
+function showOnly(id){["splashScreen","portfolioScreen","entryScreen","multiEntryScreen","historicalScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
 
 function customerBadge(c){return '<span class="player-photo customer-avatar"><strong>'+c.short+'</strong></span>'}
 function renderPortfolio(){
@@ -428,6 +428,86 @@ function openHistorical(){
   showOnly("historicalScreen");
 }
 
+function batchDateRange(){
+  const historyDates=Object.keys(historicalSubmitted).sort();
+  const start=historyDates[0]||todayISO();
+  const end=[historyDates[historyDates.length-1]||todayISO(),todayISO()].sort().pop();
+  const [sy,sm,sd]=start.split("-").map(Number);
+  const [ey,em,ed]=end.split("-").map(Number);
+  const cur=new Date(sy,sm-1,sd),last=new Date(ey,em-1,ed),out=[];
+  while(cur<=last){
+    const day=cur.getDay();
+    if(day>=1&&day<=5){
+      const off=cur.getTimezoneOffset();
+      out.push(new Date(cur.getTime()-off*60000).toISOString().slice(0,10));
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  return out;
+}
+function renderMultiDates(selectedDates=[]){
+  const selected=new Set(selectedDates);
+  const rowsByDate=Object.fromEntries(historicalRows().map(r=>[r.date,r]));
+  $("#multiDateGrid").innerHTML=batchDateRange().map(date=>{
+    const r=rowsByDate[date];
+    const meta=r ? (r.complete?"Complete":r.remaining.toFixed(1)+" h missing") : "No history";
+    return '<label class="multi-date-option '+(r?.complete?"complete":"")+'">'+
+      '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+'>'+
+      '<span><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small></span>'+
+    '</label>';
+  }).join("");
+}
+function openMultipleEntries(prefillIncomplete=false){
+  catchupContext=null;
+  $("#multiCustomer").innerHTML=customers.map(c=>'<option value="'+c.id+'">'+c.short+'</option>').join("");
+  $("#multiType").innerHTML=types.map(t=>'<option value="'+t+'">'+t+'</option>').join("");
+  $("#multiCustomer").value="PS";
+  $("#multiType").value="Meeting";
+  $("#multiHours").value="0.5";
+  $("#multiDetails").value="";
+  $("#multiMessage").textContent="";
+  const dates=prefillIncomplete?historicalRows().filter(r=>!r.complete).map(r=>r.date):[];
+  renderMultiDates(dates);
+  showOnly("multiEntryScreen");
+}
+function saveMultipleEntries(){
+  const accountCode=$("#multiCustomer").value;
+  const type=$("#multiType").value;
+  const hours=Number($("#multiHours").value);
+  const details=$("#multiDetails").value.trim();
+  const dates=[...$("#multiDateGrid").querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+
+  if(!accountCode){$("#multiMessage").textContent="Choose a customer.";return}
+  if(!type){$("#multiMessage").textContent="Choose a type.";return}
+  if(!details){$("#multiMessage").textContent="Add details.";return}
+  if(!dates.length){$("#multiMessage").textContent="Select at least one date.";return}
+
+  const data=saved();
+  let added=0,skipped=0;
+  for(const date of dates){
+    const duplicate=data.some(x=>
+      x.accountCode===accountCode &&
+      x.date===date &&
+      x.type===type &&
+      Number(x.hours)===hours &&
+      String(x.details||"").trim().toLowerCase()===details.toLowerCase()
+    );
+    if(duplicate){skipped++;continue}
+    data.push({
+      id:crypto.randomUUID?.()||String(Date.now()+added),
+      timestamp:new Date().toISOString(),
+      batchCreated:true,
+      accountCode,date,type,hours,details
+    });
+    added++;
+  }
+  saveAll(data);
+  renderHistory();
+  renderHistorical();
+  $("#multiMessage").textContent=added+" entr"+(added===1?"y":"ies")+" added to Saved"+(skipped?" • "+skipped+" duplicate"+(skipped===1?"":"s")+" skipped":"")+" ✓";
+  showSaveConfirmation(added+" entr"+(added===1?"y":"ies")+" added to Saved ✓");
+}
+
 function applyRosterLayout(){
  const mode=localStorage.getItem("timeentry-layout")==="wheel"?"wheel":"grid",grid=$("#customerGrid"),toggle=$("#layoutToggle");
  toggle?.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.layout===mode));
@@ -517,6 +597,11 @@ function setupRadialWheel(){
 
 $("#entryType").innerHTML='<option value="">--None--</option>'+types.map(t=>'<option>'+t+'</option>').join("");
 $("#enterAppBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
+$("#multipleEntriesBtn").onclick=()=>openMultipleEntries(false);
+$("#historicalMultipleBtn").onclick=()=>openMultipleEntries(true);
+$("#multiBackBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
+$("#multiSelectWeekdaysBtn").onclick=()=>renderMultiDates(historicalRows().filter(r=>!r.complete).map(r=>r.date));
+$("#multiSaveBtn").onclick=saveMultipleEntries;
 $("#fastEntryNavBtn").onclick=()=>{catchupContext=null;showOnly("portfolioScreen");renderPortfolio()};
 $("#historicalNavBtn").onclick=openHistorical;
 $("#historicalBackBtn").onclick=()=>{catchupContext=null;showOnly("portfolioScreen");renderPortfolio()};
