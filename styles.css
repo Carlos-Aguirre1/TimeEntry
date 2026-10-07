@@ -177,3 +177,6 @@ button:disabled{opacity:.55;cursor:default}
 .queued-detail{background:#fff9ea;margin:8px -4px;padding:10px 8px;border-radius:10px;border-bottom:0}
 .history-edit-queued{margin-top:8px;border:1px solid #d9ad31;background:#fff;color:#7a5b05;border-radius:10px;padding:7px 9px;font-weight:900;font-size:11px}
 .history-no-details{margin:8px 0 0;color:#68726f;font-size:12px}
+
+.history-details.always-visible{display:block!important;margin-top:8px}
+.history-day .history-details{margin-bottom:10px}
