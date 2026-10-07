@@ -30,30 +30,24 @@ let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartA
 
 function saved(){try{return JSON.parse(localStorage.getItem("timeentry-entries")||"[]")}catch(_){return[]}}
 function saveAll(data){localStorage.setItem("timeentry-entries",JSON.stringify(data))}
-function restoreKnownEntriesFromScreenshot(){
-  const recoveryKey="timeentry-recovery-2026-10-07-v1";
-  if(localStorage.getItem(recoveryKey))return;
+function restoreRequestedFour(){
+  const params=new URLSearchParams(location.search);
+  if(params.get("restore4")!=="1")return false;
   const restore=[
     {accountCode:"MAN",date:"2026-10-05",type:"Troubleshooting",hours:1,details:"Working with Jamal on updating devices time zone via mx config."},
     {accountCode:"RB",date:"2026-10-06",type:"Cadence Call",hours:1.5,details:"Prepping for cadence call an attending kids call with Customer, Nick and Mark."},
     {accountCode:"PS",date:"2026-10-06",type:"Other",hours:3.5,details:"Continue working on maturity model."},
     {accountCode:"PS",date:"2026-10-06",type:"Meeting",hours:1.5,details:"Meeting with Michael to discuss DoorDash"}
-  ];
-  const data=saved();
-  const same=(a,b)=>a.accountCode===b.accountCode&&a.date===b.date&&a.type===b.type&&Number(a.hours)===Number(b.hours)&&a.details===b.details;
-  let added=0;
-  for(const x of restore){
-    if(data.some(e=>same(e,x)))continue;
-    data.push({
-      id:crypto.randomUUID?.()||String(Date.now()+added),
-      timestamp:new Date().toISOString(),
-      recoveredFromScreenshot:true,
-      ...x
-    });
-    added++;
-  }
-  if(added)saveAll(data);
-  localStorage.setItem(recoveryKey,String(added));
+  ].map((x,i)=>({
+    id:crypto.randomUUID?.()||String(Date.now()+i),
+    timestamp:new Date().toISOString(),
+    recoveredFromScreenshot:true,
+    ...x
+  }));
+  saveAll(restore);
+  localStorage.removeItem("timeentry-transfer-baseline");
+  localStorage.setItem("timeentry-recovery-exact4","1");
+  return true;
 }
 function ensureTransferBaseline(){
   if(localStorage.getItem("timeentry-transfer-baseline"))return;
@@ -68,7 +62,6 @@ function markTransferred(ids){
   const stamp=new Date().toISOString();
   saveAll(saved().map(x=>set.has(x.id)?{...x,transferredAt:stamp}:x));
   ensureTransferBaseline();
-restoreKnownEntriesFromScreenshot();
 renderHistory();
 }
 function todayISO(){const d=new Date(),off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)}
@@ -353,5 +346,5 @@ $("#copyTransferLinkBtn").onclick=async()=>{try{const pack=buildTransferPackage(
 $("#copyJsonBtn").onclick=copyJson;
 $("#clearHistoryBtn").onclick=()=>{if(confirm("Clear all saved time entries?")){saveAll([]);renderHistory()}};
 $("#layoutToggle").onclick=e=>{const b=e.target.closest("button[data-layout]");if(!b)return;localStorage.setItem("timeentry-layout",b.dataset.layout);applyRosterLayout()};
-restoreKnownEntriesFromScreenshot();
+restoreRequestedFour();
 renderHistory();
