@@ -381,7 +381,7 @@ function renderHistorical(){
       ? '<span class="history-status complete">Complete ✓</span>'
       : '<span class="history-status missing">'+r.remaining.toFixed(1)+' h missing</span>';
     const queued=r.queued>0?'<small class="queued-note">'+r.queued.toFixed(1)+' h queued in Fast Entry</small>':"";
-    const expanded=expandedHistoricalDays.has(r.date);
+    const expanded=expandedHistoricalDays.has(r.date) || true;
 
     const submittedLines=r.submittedEntries.map(x=>
       '<div class="history-detail-row">'+
@@ -406,8 +406,7 @@ function renderHistorical(){
       '<div class="history-day-top"><div><strong>'+formatHistoryDate(r.date)+'</strong><small>'+r.submitted.toFixed(1)+' submitted • '+r.effective.toFixed(1)+' / 7.0 h including queue</small></div>'+status+'</div>'+
       '<div class="history-breakdown">'+(chips||'<span class="history-chip empty">No submitted time</span>')+'</div>'+
       queued+
-      '<button type="button" class="history-view-details" data-history-toggle="'+r.date+'">'+(expanded?'Hide details':'View details')+'</button>'+
-      '<div class="history-details '+(expanded?'':'hidden')+'">'+detailsContent+'</div>'+
+      '<div class="history-details always-visible">'+detailsContent+'</div>'+
       (!r.complete?'<button type="button" class="primary history-add" data-history-date="'+r.date+'" data-history-remaining="'+r.remaining+'">Add Missing Time • '+r.remaining.toFixed(1)+' h</button>':"")+
     '</article>';
   }).join(""):'<p class="empty-history">No days in this view.</p>';
@@ -416,12 +415,6 @@ function renderHistorical(){
     catchupContext={date:b.dataset.historyDate,remaining:Number(b.dataset.historyRemaining)};
     showOnly("portfolioScreen");
     renderPortfolio();
-  });
-  $("#historicalList")?.querySelectorAll("[data-history-toggle]").forEach(b=>b.onclick=()=>{
-    const date=b.dataset.historyToggle;
-    if(expandedHistoricalDays.has(date))expandedHistoricalDays.delete(date);
-    else expandedHistoricalDays.add(date);
-    renderHistorical();
   });
   $("#historicalList")?.querySelectorAll("[data-edit-queued]").forEach(b=>b.onclick=()=>{
     catchupContext=null;
