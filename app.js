@@ -353,4 +353,5 @@ $("#copyTransferLinkBtn").onclick=async()=>{try{const pack=buildTransferPackage(
 $("#copyJsonBtn").onclick=copyJson;
 $("#clearHistoryBtn").onclick=()=>{if(confirm("Clear all saved time entries?")){saveAll([]);renderHistory()}};
 $("#layoutToggle").onclick=e=>{const b=e.target.closest("button[data-layout]");if(!b)return;localStorage.setItem("timeentry-layout",b.dataset.layout);applyRosterLayout()};
+restoreKnownEntriesFromScreenshot();
 renderHistory();
