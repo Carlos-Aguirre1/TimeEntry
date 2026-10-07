@@ -27,6 +27,28 @@ let selectedHours=1;
 let editingId=null;
 let saveLocked=false;
 let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
+let historicalFilter="missing";
+let catchupContext=null;
+
+const historicalSubmitted={
+  "2026-09-21":{hours:7,breakdown:{OT:7}},
+  "2026-09-22":{hours:7,breakdown:{OT:7}},
+  "2026-09-23":{hours:7,breakdown:{OT:7}},
+  "2026-09-24":{hours:7,breakdown:{PS:7}},
+  "2026-09-25":{hours:7,breakdown:{PS:7}},
+  "2026-09-28":{hours:0,breakdown:{}},
+  "2026-09-29":{hours:1.5,breakdown:{PS:.5,KI:1}},
+  "2026-09-30":{hours:0,breakdown:{}},
+  "2026-10-01":{hours:5.5,breakdown:{IS:5.5}},
+  "2026-10-02":{hours:1.5,breakdown:{BL:1,PS:.5}},
+  "2026-10-05":{hours:3,breakdown:{MAN:1,BHC:.5,CPF:1,PS:.5}},
+  "2026-10-06":{hours:7,breakdown:{PS:5.5,RB:1.5}},
+  "2026-10-07":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-08":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-09":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-12":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-13":{hours:.5,breakdown:{PS:.5}}
+};
 
 function saved(){try{return JSON.parse(localStorage.getItem("timeentry-entries")||"[]")}catch(_){return[]}}
 function saveAll(data){localStorage.setItem("timeentry-entries",JSON.stringify(data))}
@@ -65,7 +87,7 @@ function markTransferred(ids){
 renderHistory();
 }
 function todayISO(){const d=new Date(),off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)}
-function showOnly(id){["splashScreen","portfolioScreen","entryScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
+function showOnly(id){["splashScreen","portfolioScreen","entryScreen","historicalScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
 
 function customerBadge(c){return '<span class="player-photo customer-avatar"><strong>'+c.short+'</strong></span>'}
 function renderPortfolio(){
@@ -77,10 +99,12 @@ function renderPortfolio(){
 function openCustomer(id){
   editingId=null;
   activeCustomer=customers.find(c=>c.id===id);
-  selectedHours=1;
+  selectedHours=catchupContext?Math.max(.5,Math.min(7,catchupContext.remaining)):1;
   $("#activeCustomerName").textContent=activeCustomer.short;
-  $("#activeCustomerDetail").textContent="Customer code";
-  $("#entryDate").value=todayISO();
+  $("#activeCustomerDetail").textContent=catchupContext
+    ? "Historical catch-up • "+formatHistoryDate(catchupContext.date)+" • "+catchupContext.remaining.toFixed(1)+" h remaining"
+    : "Customer code";
+  $("#entryDate").value=catchupContext?.date||todayISO();
   $("#entryType").value="Meeting";
   $("#entryDetails").value="";
   $("#message").textContent="";
@@ -92,7 +116,7 @@ function openCustomer(id){
 function showPortfolio(){activeCustomer=null;showOnly("portfolioScreen");renderPortfolio()}
 
 function renderHours(){
-  const values=[0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8];
+  const values=[0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,8];
   $("#hoursGrid").innerHTML=values.map(v=>`<button type="button" class="hour-chip ${v===selectedHours?"active":""}" data-hours="${v}">${v} h</button>`).join("");
   $("#hoursGrid").querySelectorAll(".hour-chip").forEach(b=>b.onclick=()=>{selectedHours=Number(b.dataset.hours);renderHours()});
   $("#hoursValue").textContent=selectedHours.toFixed(1)+" h";
@@ -142,7 +166,11 @@ function saveEntry(next){
     saveLocked=false;
     $("#saveBtn").disabled=false;
     $("#saveNextBtn").disabled=false;
-    if(next||wasEditing)showPortfolio();
+    if(catchupContext){
+      catchupContext=null;
+      renderHistorical();
+      showOnly("historicalScreen");
+    }else if(next||wasEditing)showPortfolio();
   },650);
 }
 function renderHistory(){
@@ -244,6 +272,73 @@ async function copyJson(){
  try{await navigator.clipboard.writeText(text);alert("JSON queue copied.")}catch(_){prompt("Copy JSON queue:",text)}
 }
 
+function formatHistoryDate(iso){
+  const [y,m,d]=iso.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString("en-CA",{weekday:"short",month:"short",day:"numeric"});
+}
+function queuedByDate(){
+  const out={};
+  for(const x of pendingEntries()){
+    if(!out[x.date])out[x.date]={hours:0,breakdown:{}};
+    out[x.date].hours+=Number(x.hours)||0;
+    out[x.date].breakdown[x.accountCode]=(out[x.date].breakdown[x.accountCode]||0)+(Number(x.hours)||0);
+  }
+  return out;
+}
+function historicalRows(){
+  const queued=queuedByDate();
+  return Object.keys(historicalSubmitted).sort().map(date=>{
+    const base=historicalSubmitted[date]||{hours:0,breakdown:{}};
+    const q=queued[date]||{hours:0,breakdown:{}};
+    const submitted=Number(base.hours)||0;
+    const queuedHours=Number(q.hours)||0;
+    const effective=submitted+queuedHours;
+    const remaining=Math.max(0,7-effective);
+    const breakdown={...base.breakdown};
+    for(const [code,hours] of Object.entries(q.breakdown||{}))breakdown[code]=(breakdown[code]||0)+hours;
+    return {date,submitted,queued:queuedHours,effective,remaining,breakdown,complete:effective>=7};
+  });
+}
+function renderHistorical(){
+  const rows=historicalRows();
+  const visibleRows=rows.filter(r=>historicalFilter==="all"||(historicalFilter==="missing"?!r.complete:r.complete));
+  const missingHours=rows.reduce((sum,r)=>sum+r.remaining,0);
+  const incomplete=rows.filter(r=>!r.complete).length;
+  const queuedHours=rows.reduce((sum,r)=>sum+r.queued,0);
+  $("#historicalMissingHours").textContent=missingHours.toFixed(1);
+  $("#historicalIncompleteDays").textContent=String(incomplete);
+  $("#historicalQueuedHours").textContent=queuedHours.toFixed(1);
+  $("#historicalFilters")?.querySelectorAll("[data-history-filter]").forEach(b=>b.classList.toggle("active",b.dataset.historyFilter===historicalFilter));
+
+  $("#historicalList").innerHTML=visibleRows.length?visibleRows.map(r=>{
+    const chips=Object.entries(r.breakdown)
+      .filter(([,h])=>Number(h)>0)
+      .map(([code,h])=>'<span class="history-chip">'+code+' '+Number(h).toFixed(1)+'</span>').join("");
+    const status=r.complete
+      ? '<span class="history-status complete">Complete ✓</span>'
+      : '<span class="history-status missing">'+r.remaining.toFixed(1)+' h missing</span>';
+    const queued=r.queued>0?'<small class="queued-note">'+r.queued.toFixed(1)+' h queued in Fast Entry</small>':"";
+    return '<article class="history-day '+(r.complete?"is-complete":"is-missing")+'">'+
+      '<div class="history-day-top"><div><strong>'+formatHistoryDate(r.date)+'</strong><small>'+r.submitted.toFixed(1)+' submitted • '+r.effective.toFixed(1)+' / 7.0 h including queue</small></div>'+status+'</div>'+
+      '<div class="history-breakdown">'+(chips||'<span class="history-chip empty">No submitted time</span>')+'</div>'+
+      queued+
+      (!r.complete?'<button type="button" class="primary history-add" data-history-date="'+r.date+'" data-history-remaining="'+r.remaining+'">Add Missing Time • '+r.remaining.toFixed(1)+' h</button>':"")+
+    '</article>';
+  }).join(""):'<p class="empty-history">No days in this view.</p>';
+
+  $("#historicalList")?.querySelectorAll(".history-add").forEach(b=>b.onclick=()=>{
+    catchupContext={date:b.dataset.historyDate,remaining:Number(b.dataset.historyRemaining)};
+    showOnly("portfolioScreen");
+    renderPortfolio();
+  });
+}
+function openHistorical(){
+  catchupContext=null;
+  historicalFilter="missing";
+  renderHistorical();
+  showOnly("historicalScreen");
+}
+
 function applyRosterLayout(){
  const mode=localStorage.getItem("timeentry-layout")==="wheel"?"wheel":"grid",grid=$("#customerGrid"),toggle=$("#layoutToggle");
  toggle?.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.layout===mode));
@@ -333,6 +428,10 @@ function setupRadialWheel(){
 
 $("#entryType").innerHTML='<option value="">--None--</option>'+types.map(t=>'<option>'+t+'</option>').join("");
 $("#enterAppBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
+$("#fastEntryNavBtn").onclick=()=>{catchupContext=null;showOnly("portfolioScreen");renderPortfolio()};
+$("#historicalNavBtn").onclick=openHistorical;
+$("#historicalBackBtn").onclick=()=>{catchupContext=null;showOnly("portfolioScreen");renderPortfolio()};
+$("#historicalFilters").onclick=e=>{const b=e.target.closest("[data-history-filter]");if(!b)return;historicalFilter=b.dataset.historyFilter;renderHistorical()};
 $("#backBtn").onclick=showPortfolio;
 $("#hoursMinus").onclick=()=>changeHours(-0.5);
 $("#hoursPlus").onclick=()=>changeHours(0.5);
