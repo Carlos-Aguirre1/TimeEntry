@@ -598,6 +598,7 @@ function setupRadialWheel(){
 $("#entryType").innerHTML='<option value="">--None--</option>'+types.map(t=>'<option>'+t+'</option>').join("");
 $("#enterAppBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multipleEntriesBtn").onclick=()=>openMultipleEntries(false);
+$("#multiNavBtn").onclick=()=>openMultipleEntries(false);
 $("#historicalMultipleBtn").onclick=()=>openMultipleEntries(true);
 $("#multiBackBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multiSelectWeekdaysBtn").onclick=()=>renderMultiDates(historicalRows().filter(r=>!r.complete).map(r=>r.date));
