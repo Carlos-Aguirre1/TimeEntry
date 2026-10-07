@@ -162,8 +162,8 @@ function deleteEntry(id){
 function buildTransferPackage(includeAll=false){
  const entries=includeAll?saved():pendingEntries();
  if(!entries.length)throw new Error(includeAll?"No saved entries to send":"No new entries to send");
- const compact=entries.map(({accountCode,date,type,hours,details})=>[accountCode,date,type,hours,details]);
- const url=location.origin+location.pathname.replace(/[^/]*$/,"")+"transfer.html#q="+encodeURIComponent(JSON.stringify(compact));
+ const payload=entries.map(({accountCode,date,type,hours,details})=>({accountCode,date,type,hours,details}));
+ const url=location.origin+location.pathname.replace(/[^/]*$/,"")+"transfer.html#q="+encodeURIComponent(JSON.stringify(payload));
  return {url,ids:entries.map(x=>x.id),count:entries.length,includeAll};
 }
 function buildTransferUrl(){return buildTransferPackage(false).url}
