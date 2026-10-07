@@ -233,6 +233,20 @@ function saveEntry(next){
 }
 function renderHistory(){
  const data=saved(); $("#savedCount").textContent=data.length;
+ const today=todayISO();
+ const td=new Date(today+"T12:00:00");
+ const day=(td.getDay()+6)%7;
+ const monday=new Date(td); monday.setDate(td.getDate()-day);
+ const sunday=new Date(monday); sunday.setDate(monday.getDate()+6);
+ const iso=d=>{const off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)};
+ const weekStart=iso(monday),weekEnd=iso(sunday);
+ const sum=list=>list.reduce((n,x)=>n+(Number(x.hours)||0),0);
+ const todayHours=sum(data.filter(x=>x.date===today));
+ const weekHours=sum(data.filter(x=>x.date>=weekStart&&x.date<=weekEnd));
+ const totalHours=sum(data);
+ if($("#savedTodayHours"))$("#savedTodayHours").textContent=todayHours.toFixed(1);
+ if($("#savedWeekHours"))$("#savedWeekHours").textContent=weekHours.toFixed(1);
+ if($("#savedTotalHours"))$("#savedTotalHours").textContent=totalHours.toFixed(1);
  $("#historyList").innerHTML=data.length?data.slice().reverse().map(x=>`<div class="saved-row"><div class="saved-content"><strong>${x.accountCode}</strong><small>${x.date} • ${x.type} • ${Number(x.hours).toFixed(1)} h</small><span>${x.details}</span></div><div class="entry-controls"><button type="button" class="entry-edit" data-edit="${x.id}">Edit</button><button type="button" class="entry-delete" data-delete="${x.id}">Delete</button></div></div>`).join(""):"<p>No time entries saved yet.</p>";
  $("#historyList").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editEntry(b.dataset.edit));
  $("#historyList").querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteEntry(b.dataset.delete));
