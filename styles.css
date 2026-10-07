@@ -202,3 +202,11 @@ button:disabled{opacity:.55;cursor:default}
   .multi-date-head{align-items:flex-start;flex-direction:column}
   .multi-date-head .ghost{width:100%}
 }
+
+
+/* Saved queue counters */
+.saved-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 8px}
+.saved-kpis>div{background:#f4f7f6;border:1px solid #dde5e2;border-radius:14px;padding:12px 8px;text-align:center}
+.saved-kpis strong,.saved-kpis span{display:block}
+.saved-kpis strong{font-size:22px;color:#123b6b}
+.saved-kpis span{font-size:10px;color:#68726f;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
