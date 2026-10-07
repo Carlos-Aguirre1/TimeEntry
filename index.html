@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=7">
+<link rel="stylesheet" href="styles.css?v=24">
 </head>
 <body>
 <header>
@@ -12,7 +12,11 @@
     <div class="app-mark">TE</div>
     <div><small>MCPME • TIMEENTRY</small><h1>Fast Time Entry</h1></div>
   </div>
-  <button id="historyBtn" class="ghost">Saved <span id="savedCount">0</span></button>
+  <div class="top-nav">
+    <button id="fastEntryNavBtn" class="ghost">Fast Entry</button>
+    <button id="historicalNavBtn" class="ghost">Historical</button>
+    <button id="historyBtn" class="ghost">Saved <span id="savedCount">0</span></button>
+  </div>
 </header>
 <main>
   <section id="splashScreen" class="splash-screen">
@@ -82,6 +86,33 @@
     </section>
   </section>
 
+  <section id="historicalScreen" class="hidden">
+    <section class="card historical-summary">
+      <div class="section-head">
+        <div>
+          <small>7 HOURS • MON–FRI</small>
+          <h2>Historical Time</h2>
+        </div>
+        <button id="historicalBackBtn" class="ghost">Fast Entry</button>
+      </div>
+      <div class="history-kpis">
+        <div><strong id="historicalMissingHours">0.0</strong><span>hours missing</span></div>
+        <div><strong id="historicalIncompleteDays">0</strong><span>incomplete days</span></div>
+        <div><strong id="historicalQueuedHours">0.0</strong><span>hours queued</span></div>
+      </div>
+      <div class="historical-filters" id="historicalFilters">
+        <button type="button" data-history-filter="missing" class="active">Missing</button>
+        <button type="button" data-history-filter="complete">Complete</button>
+        <button type="button" data-history-filter="all">All</button>
+      </div>
+      <p class="historical-note">Customer names are never shown here. Historical activity uses account acronyms only.</p>
+    </section>
+
+    <section class="card historical-list-card">
+      <div id="historicalList"></div>
+    </section>
+  </section>
+
   <section id="history" class="card hidden">
     <div class="section-head">
       <div><h2>Saved time entries</h2><small>CRM-ready queue</small></div>
@@ -99,6 +130,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=23"></script>
+<script src="app.js?v=24"></script>
 </body>
 </html>
