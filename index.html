@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=27">
+<link rel="stylesheet" href="styles.css?v=28">
 </head>
 <body>
 <header>
@@ -44,7 +44,7 @@
     </div>
     <div class="bulk-toolbar">
       <div class="compact-control-row">
-        <div></div>
+        <button id="multipleEntriesBtn" type="button" class="ghost multi-entry-launch">Multiple Entries</button>
         <div id="layoutToggle" class="layout-toggle" role="group" aria-label="Customer layout">
           <button type="button" data-layout="grid" class="active">Grid</button>
           <button type="button" data-layout="wheel">Wheel</button>
@@ -86,6 +86,67 @@
     </section>
   </section>
 
+  <section id="multiEntryScreen" class="hidden">
+    <section class="card section-card">
+      <div class="section-head">
+        <div>
+          <small>BATCH ENTRY</small>
+          <h2>Multiple Entries</h2>
+        </div>
+        <button id="multiBackBtn" class="ghost">Back</button>
+      </div>
+      <p class="multi-intro">Enter the time once, then choose every date that should receive the same entry.</p>
+
+      <div class="field-group">
+        <label>Customer</label>
+        <select id="multiCustomer"></select>
+      </div>
+
+      <div class="field-group">
+        <label>Type</label>
+        <select id="multiType"></select>
+      </div>
+
+      <div class="field-group">
+        <label>Number of Hours per day</label>
+        <select id="multiHours">
+          <option value="0.5">0.5 h</option>
+          <option value="1">1.0 h</option>
+          <option value="1.5">1.5 h</option>
+          <option value="2">2.0 h</option>
+          <option value="2.5">2.5 h</option>
+          <option value="3">3.0 h</option>
+          <option value="3.5">3.5 h</option>
+          <option value="4">4.0 h</option>
+          <option value="4.5">4.5 h</option>
+          <option value="5">5.0 h</option>
+          <option value="5.5">5.5 h</option>
+          <option value="6">6.0 h</option>
+          <option value="6.5">6.5 h</option>
+          <option value="7">7.0 h</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Details</label>
+        <textarea id="multiDetails" placeholder="Example: Team Anu morning meeting"></textarea>
+      </div>
+
+      <div class="field-group">
+        <div class="multi-date-head">
+          <label>Select dates</label>
+          <button id="multiSelectWeekdaysBtn" type="button" class="ghost">Select incomplete days</button>
+        </div>
+        <div id="multiDateGrid" class="multi-date-grid"></div>
+      </div>
+    </section>
+
+    <section class="card actions">
+      <button id="multiSaveBtn" type="button" class="primary">Save Multiple Entries</button>
+      <p id="multiMessage" aria-live="polite"></p>
+    </section>
+  </section>
+
   <section id="historicalScreen" class="hidden">
     <section class="card historical-summary">
       <div class="section-head">
@@ -93,7 +154,10 @@
           <small>7 HOURS • MON–FRI</small>
           <h2>Historical Time</h2>
         </div>
-        <button id="historicalBackBtn" class="ghost">Fast Entry</button>
+        <div class="historical-head-actions">
+          <button id="historicalMultipleBtn" class="ghost">Multiple Entries</button>
+          <button id="historicalBackBtn" class="ghost">Fast Entry</button>
+        </div>
       </div>
       <div class="history-kpis">
         <div><strong id="historicalMissingHours">0.0</strong><span>hours missing</span></div>
@@ -130,6 +194,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=27"></script>
+<script src="app.js?v=28"></script>
 </body>
 </html>
