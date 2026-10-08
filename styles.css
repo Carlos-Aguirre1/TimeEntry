@@ -360,3 +360,17 @@ button:disabled{opacity:.55;cursor:default}
 .multi-existing-row small{font-size:10px;color:#68726f;line-height:1.3;margin-top:2px}
 .multi-existing-row.queued{background:#fff9ea}
 .multi-existing.empty{font-size:10px;color:#8a9490}
+
+
+/* Multiple Entries historical detail cards */
+.multi-date-option{align-items:stretch!important;flex-direction:column}
+.multi-date-select-row{display:flex;align-items:center;gap:9px}
+.multi-existing-list{margin-top:8px;padding-top:8px;border-top:1px solid #e3e8e5}
+.multi-existing-entry{padding:7px 0;border-bottom:1px solid #edf1ef}
+.multi-existing-entry:last-child{border-bottom:0}
+.multi-existing-entry>div{display:flex;justify-content:space-between;gap:8px}
+.multi-existing-entry strong{font-size:11px;color:#123b6b}
+.multi-existing-entry span{font-size:10px;color:#68726f;font-weight:800;text-align:right}
+.multi-existing-entry p{margin:4px 0 0;font-size:10px;line-height:1.35;color:#44524d}
+.multi-existing-entry.queued{background:#fff9ea;border-radius:8px;padding:7px}
+.multi-existing-empty{margin-top:8px;padding-top:8px;border-top:1px solid #e3e8e5;color:#87908c;font-size:10px}
