@@ -518,7 +518,13 @@ function historicalRows(){
 }
 function renderHistorical(){
   const rows=historicalRows();
-  const visibleRows=rows.filter(r=>historicalFilter==="all"||(historicalFilter==="missing"?!r.complete:r.complete));
+  const visibleRows=rows.filter(r=>{
+    if(historicalFilter==="all")return true;
+    if(historicalFilter==="missing")return !r.complete;
+    if(historicalFilter==="complete")return r.complete;
+    if(historicalFilter==="duplicates")return !!duplicateReview[r.date];
+    return true;
+  });
   const missingHours=rows.reduce((sum,r)=>sum+r.remaining,0);
   const incomplete=rows.filter(r=>!r.complete).length;
   const queuedHours=rows.reduce((sum,r)=>sum+r.queued,0);
