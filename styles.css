@@ -386,3 +386,6 @@ button:disabled{opacity:.55;cursor:default}
   font-weight:900;
   line-height:1.35
 }
+
+.historical-filters{flex-wrap:wrap}
+.historical-filters button[data-history-filter="duplicates"]{flex:1 1 100%}
