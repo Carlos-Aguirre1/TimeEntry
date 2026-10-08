@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=46">
+<link rel="stylesheet" href="styles.css?v=47">
 </head>
 <body>
 <header>
@@ -25,7 +25,7 @@
       <div class="app-mark large">TE</div>
       <small>MCPME • TIMEENTRY</small>
       <h1>Fast Time Entry</h1>
-      <div class="version-badge">Prototype v46</div>
+      <div class="version-badge">Prototype v47</div>
       <h2>Customer. Time. Details. Done.</h2>
       <p>Capture CRM-ready time entries quickly from your phone, then transfer the queue to your laptop.</p>
       <div class="splash-benefits">
@@ -187,8 +187,8 @@
         <button id="historyAllMonthsBtn" type="button" class="ghost">Display all</button>
       </div>
       <div class="historical-filters" id="historicalFilters">
-        <button type="button" data-history-filter="missing">Missing</button>
-        <button type="button" data-history-filter="complete">Complete</button>
+        <button type="button" data-history-filter="missing">🟡 Missing / partial</button>
+        <button type="button" data-history-filter="complete">✅ 7+ hours</button>
         <button type="button" data-history-filter="all" class="active">All</button>
         <button type="button" data-history-filter="duplicates">Potential duplicates</button>
       </div>
@@ -222,6 +222,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=46"></script>
+<script src="app.js?v=47"></script>
 </body>
 </html>
