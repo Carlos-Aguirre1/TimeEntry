@@ -28,6 +28,7 @@ let editingId=null;
 let saveLocked=false;
 let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
 let historicalFilter="all";
+let historicalMonth=null;
 let catchupContext=null;
 const HISTORY_START="2026-08-01";
 const expandedHistoricalDays=new Set();
@@ -563,6 +564,7 @@ function historicalRows(){
 function renderHistorical(){
   const rows=historicalRows();
   const visibleRows=rows.filter(r=>{
+    if(historicalMonth && !r.date.startsWith(historicalMonth))return false;
     if(historicalFilter==="all")return true;
     if(historicalFilter==="missing")return !r.complete;
     if(historicalFilter==="complete")return r.complete;
@@ -584,7 +586,7 @@ function renderHistorical(){
     monthBox.innerHTML=
       '<div class="month-summary-total"><strong>'+totalLogged.toFixed(1)+' / '+totalExpected.toFixed(1)+' h</strong><span>logged / expected • Aug–Oct through '+formatHistoryDate(historyEndDate())+'</span></div>'+
       monthSummary.map(m=>
-        '<div class="month-summary-row">'+
+        '<button type="button" class="month-summary-row month-summary-select '+(historicalMonth===m.key?'selected':'')+'" data-history-month="'+m.key+'">'+
           '<div><strong>'+m.label+'</strong><small>'+(m.key==="2026-10"?'through '+formatHistoryDate(m.end):'full month')+'</small></div>'+
           '<div class="month-summary-metrics">'+
             '<span><b>'+m.logged.toFixed(1)+'</b> logged</span>'+
@@ -592,10 +594,27 @@ function renderHistorical(){
             (m.queued?'<span><b>'+m.queued.toFixed(1)+'</b> queued</span>':'')+
             '<span class="'+(m.gap>0?'month-gap':'month-good')+'"><b>'+m.gap.toFixed(1)+'</b> gap</span>'+
           '</div>'+
-        '</div>'
+        '</button>'
       ).join("");
+    monthBox.querySelectorAll("[data-history-month]").forEach(b=>b.onclick=()=>{
+      historicalMonth=b.dataset.historyMonth;
+      historicalFilter="all";
+      renderHistorical();
+      document.querySelector("#historicalMonthNav")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+    });
   }
-  $("#historicalFilters")?.querySelectorAll("[data-history-filter]").forEach(b=>b.classList.toggle("active",b.dataset.historyFilter===historicalFilter));
+
+  const monthNav=$("#historicalMonthNav");
+  if(monthNav){
+    monthNav.classList.toggle("hidden",!historicalMonth);
+    const keys=["2026-08","2026-09","2026-10"];
+    const labels={"2026-08":"August","2026-09":"September","2026-10":"October"};
+    const idx=historicalMonth?keys.indexOf(historicalMonth):-1;
+    $("#historyMonthNavLabel").textContent=historicalMonth?labels[historicalMonth]+" 2026":"";
+    $("#historyPrevMonthBtn").disabled=idx<=0;
+    $("#historyNextMonthBtn").disabled=idx<0||idx>=keys.length-1;
+  }
+    $("#historicalFilters")?.querySelectorAll("[data-history-filter]").forEach(b=>b.classList.toggle("active",b.dataset.historyFilter===historicalFilter));
 
   $("#historicalList").innerHTML=visibleRows.length?visibleRows.map(r=>{
     const chips=Object.entries(r.breakdown)
@@ -657,6 +676,7 @@ function renderHistorical(){
 }
 function openHistorical(){
   catchupContext=null;
+  historicalMonth=null;
   historicalFilter="all";
   renderHistorical();
   showOnly("historicalScreen");
@@ -876,6 +896,15 @@ $("#multiSaveBtn").onclick=saveMultipleEntries;
 $("#fastEntryNavBtn").onclick=()=>{catchupContext=null;showOnly("portfolioScreen");renderPortfolio()};
 $("#historicalNavBtn").onclick=openHistorical;
 $("#historicalBackBtn").onclick=()=>{catchupContext=null;showOnly("portfolioScreen");renderPortfolio()};
+$("#historyPrevMonthBtn").onclick=()=>{
+  const keys=["2026-08","2026-09","2026-10"],i=keys.indexOf(historicalMonth);
+  if(i>0){historicalMonth=keys[i-1];historicalFilter="all";renderHistorical()}
+};
+$("#historyNextMonthBtn").onclick=()=>{
+  const keys=["2026-08","2026-09","2026-10"],i=keys.indexOf(historicalMonth);
+  if(i>=0&&i<keys.length-1){historicalMonth=keys[i+1];historicalFilter="all";renderHistorical()}
+};
+$("#historyAllMonthsBtn").onclick=()=>{historicalMonth=null;historicalFilter="all";renderHistorical()};
 $("#historicalFilters").onclick=e=>{const b=e.target.closest("[data-history-filter]");if(!b)return;historicalFilter=b.dataset.historyFilter;renderHistorical()};
 $("#backBtn").onclick=showPortfolio;
 $("#hoursMinus").onclick=()=>changeHours(-0.5);
