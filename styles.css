@@ -210,3 +210,7 @@ button:disabled{opacity:.55;cursor:default}
 .saved-kpis strong,.saved-kpis span{display:block}
 .saved-kpis strong{font-size:22px;color:#123b6b}
 .saved-kpis span{font-size:10px;color:#68726f;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+
+.history-additional{width:100%;margin-top:8px;border-color:#123b6b}
+.history-day.is-complete{background:linear-gradient(180deg,#ffffff 0%,#fbfdfc 100%)}
+.history-status.complete{font-size:10px}
