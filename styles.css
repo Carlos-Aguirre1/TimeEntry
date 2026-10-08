@@ -705,3 +705,50 @@ button:disabled{opacity:.55;cursor:default}
   .splash-quarter-summary{grid-template-columns:1fr 1fr}
   .quarter-card{min-height:104px}
 }
+
+/* v51 monthly overage + customer focus view */
+.month-over{color:#17653c!important}
+.month-over b{color:#17653c!important}
+.customer-period-control{max-width:460px}
+.customer-hours-total{
+  margin:10px 0 14px;
+  background:#123b6b;
+  color:#fff;
+  border-radius:14px;
+  padding:14px;
+}
+.customer-hours-total strong,.customer-hours-total span{display:block}
+.customer-hours-total strong{font-size:24px}
+.customer-hours-total span{font-size:11px;margin-top:3px;opacity:.85;font-weight:800}
+.customer-hours-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.customer-hours-card{
+  border:1px solid #d9e1de;
+  background:#fff;
+  border-radius:14px;
+  padding:13px;
+  text-align:left;
+  color:#123b6b;
+  cursor:pointer;
+}
+.customer-hours-card-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.customer-hours-card-top strong{font-size:19px}
+.customer-hours-card-top span{font-size:16px;font-weight:1000}
+.customer-hours-bar{height:8px;background:#edf1ef;border-radius:999px;overflow:hidden;margin:10px 0 6px}
+.customer-hours-bar span{display:block;height:100%;background:#d8ad31;border-radius:999px}
+.customer-hours-card small{font-size:10px;color:#68726f;font-weight:800}
+.customer-hours-detail-card{margin-top:14px}
+.customer-hour-day{padding:12px 0;border-bottom:1px solid #e4e9e7}
+.customer-hour-day:last-child{border-bottom:0}
+.customer-hour-day-head{display:flex;justify-content:space-between;gap:10px;color:#123b6b;margin-bottom:7px}
+.customer-hour-day-head span{font-weight:1000}
+.customer-hour-entry{background:#f7f9f8;border:1px solid #e1e7e4;border-radius:10px;padding:9px 10px;margin:6px 0}
+.customer-hour-entry strong{color:#123b6b;font-size:11px}
+.customer-hour-entry p{margin:4px 0 0;color:#4f5c57;font-size:10px;line-height:1.4}
+.customer-hour-entry.uncaptured{background:#fff9ea;border-color:#ead7a0}
+@media(max-width:560px){
+  .customer-hours-grid{grid-template-columns:1fr}
+}
