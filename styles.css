@@ -671,3 +671,37 @@ button:disabled{opacity:.55;cursor:default}
 .historical-filters button[data-history-filter="vacation"]{
   flex:1 1 100%;
 }
+
+/* v49 quarter dashboard on splash */
+.splash-quarter-summary{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  width:min(760px,100%);
+  margin:18px auto 16px;
+}
+.quarter-card{
+  border:1px solid #cfdad6;
+  background:#fff;
+  border-radius:14px;
+  padding:13px 12px;
+  text-align:left;
+  min-height:112px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  color:#123b6b;
+}
+.quarter-card.active{
+  border:2px solid #d8ad31;
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+.quarter-name{font-size:18px;font-weight:1000}
+.quarter-range{font-size:10px;color:#68726f;font-weight:800}
+.quarter-card strong{font-size:18px;margin-top:auto}
+.quarter-card small{font-size:10px;color:#8a5c00;font-weight:900}
+@media(max-width:650px){
+  .splash-quarter-summary{grid-template-columns:1fr 1fr}
+  .quarter-card{min-height:104px}
+}
