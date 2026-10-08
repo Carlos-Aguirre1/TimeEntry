@@ -409,3 +409,17 @@ button:disabled{opacity:.55;cursor:default}
   .month-summary-row{align-items:flex-start;flex-direction:column}
   .month-summary-metrics{justify-content:flex-start}
 }
+
+.version-badge{
+  display:inline-block;
+  margin:4px 0 8px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#f7e7a8;
+  border:1px solid #d6ad2f;
+  color:#123b6b;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
