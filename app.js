@@ -33,34 +33,50 @@ const HISTORY_START="2026-08-01";
 const expandedHistoricalDays=new Set();
 
 const historicalSubmitted={
-  "2026-08-10":{hours:9,breakdown:{KI:3,HC:1.5,CPF:1.5,RB:3}},
-  "2026-08-11":{hours:5,breakdown:{IS:2.5,HC:2.5}},
-  "2026-08-12":{hours:5.5,breakdown:{HC:2.5,OT:3}},
-  "2026-08-13":{hours:6.5,breakdown:{PS:1.5,HC:1.5,BL:2,OT:1.5}},
-  "2026-08-14":{hours:7,breakdown:{MAN:1,IS:2,TD:2,HC:2}},
-  "2026-08-17":{hours:6,breakdown:{PS:3,IS:1.5,OT:1.5}},
-  "2026-08-18":{hours:5,breakdown:{PS:2.5,OT:2.5}},
-  "2026-08-19":{hours:6,breakdown:{HC:3,WM:2.5,PS:.5}},
-  "2026-08-20":{hours:3,breakdown:{PS:1.5,KI:1.5}},
-  "2026-08-21":{hours:5.5,breakdown:{CRC:1.5,IS:1.5,BL:2.5}},
-  "2026-08-24":{hours:6.5,breakdown:{KI:1.5,IS:1.5,BL:3.5}},
-  "2026-08-25":{hours:4.5,breakdown:{PS:2.5,CPF:2}},
-  "2026-08-26":{hours:5,breakdown:{IS:1,OT:1.5,PS:1,KI:1.5}},
-  "2026-09-08":{hours:3,breakdown:{PS:3}},
-  "2026-09-09":{hours:2.5,breakdown:{BL:2,PS:.5}},
-  "2026-09-14":{hours:2,breakdown:{CRC:2}},
+  "2026-08-10":{hours:9.5,breakdown:{KI:3,HC:1.5,CPF:1.5,RB:3,PS:.5}},
+  "2026-08-11":{hours:5.5,breakdown:{IS:2.5,HC:2.5,PS:.5}},
+  "2026-08-12":{hours:6,breakdown:{HC:2.5,OT:3,PS:.5}},
+  "2026-08-13":{hours:7,breakdown:{PS:2,HC:1.5,BL:2,OT:1.5}},
+  "2026-08-14":{hours:7.5,breakdown:{MAN:1,IS:2,TD:2,HC:2,PS:.5}},
+  "2026-08-17":{hours:6.5,breakdown:{PS:3.5,IS:1.5,OT:1.5}},
+  "2026-08-18":{hours:5.5,breakdown:{PS:3,OT:2.5}},
+  "2026-08-19":{hours:6.5,breakdown:{HC:3,WM:2.5,PS:1}},
+  "2026-08-20":{hours:3.5,breakdown:{PS:2,KI:1.5}},
+  "2026-08-21":{hours:6,breakdown:{CRC:1.5,IS:1.5,BL:2.5,PS:.5}},
+  "2026-08-24":{hours:7,breakdown:{KI:1.5,IS:1.5,BL:3.5,PS:.5}},
+  "2026-08-25":{hours:5,breakdown:{PS:3,CPF:2}},
+  "2026-08-26":{hours:5.5,breakdown:{IS:1,OT:1.5,PS:1.5,KI:1.5}},
+  "2026-08-27":{hours:.5,breakdown:{PS:.5}},
+  "2026-08-28":{hours:.5,breakdown:{PS:.5}},
+  "2026-08-31":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-01":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-02":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-03":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-04":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-07":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-08":{hours:3.5,breakdown:{PS:3.5}},
+  "2026-09-09":{hours:3.5,breakdown:{BL:2,PS:1.5}},
+  "2026-09-10":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-11":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-14":{hours:2.5,breakdown:{CRC:2,PS:.5}},
+  "2026-09-15":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-16":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-17":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-18":{hours:.5,breakdown:{PS:.5}},
   "2026-09-21":{hours:7,breakdown:{OT:7}},
   "2026-09-22":{hours:7,breakdown:{OT:7}},
   "2026-09-23":{hours:7,breakdown:{OT:7}},
   "2026-09-24":{hours:7,breakdown:{PS:7}},
   "2026-09-25":{hours:7,breakdown:{PS:7}},
-  "2026-09-29":{hours:1.5,breakdown:{PS:.5,KI:1}},
+  "2026-09-28":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-29":{hours:2,breakdown:{PS:1,KI:1}},
+  "2026-09-30":{hours:.5,breakdown:{PS:.5}},
   "2026-10-01":{hours:7,breakdown:{PS:1.5,IS:5.5}},
   "2026-10-02":{hours:1.5,breakdown:{BL:1,PS:.5}},
   "2026-10-05":{hours:3,breakdown:{MAN:1,BHC:.5,CPF:1,PS:.5}},
   "2026-10-06":{hours:7,breakdown:{PS:5.5,RB:1.5}},
-  "2026-10-07":{hours:.5,breakdown:{PS:.5}},
-  "2026-10-08":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-07":{hours:1,breakdown:{PS:1}},
+  "2026-10-08":{hours:1,breakdown:{PS:1}},
   "2026-10-09":{hours:.5,breakdown:{PS:.5}},
   "2026-10-12":{hours:.5,breakdown:{PS:.5}},
   "2026-10-13":{hours:.5,breakdown:{PS:.5}}
@@ -190,6 +206,29 @@ const historicalDetails={
     {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu meeting"}
   ]
 };
+
+const latestRecurringMeetings={
+  "2026-08-10":1,"2026-08-11":1,"2026-08-12":1,"2026-08-13":1,"2026-08-14":1,
+  "2026-08-17":1,"2026-08-18":1,"2026-08-19":1,"2026-08-20":1,"2026-08-21":1,
+  "2026-08-24":1,"2026-08-25":1,"2026-08-26":1,"2026-08-27":1,"2026-08-28":1,
+  "2026-08-31":1,"2026-09-01":1,"2026-09-02":1,"2026-09-03":1,"2026-09-04":1,
+  "2026-09-07":1,"2026-09-08":1,"2026-09-09":2,"2026-09-10":1,"2026-09-11":1,
+  "2026-09-14":1,"2026-09-15":1,"2026-09-16":1,"2026-09-17":1,"2026-09-18":1,
+  "2026-09-28":1,"2026-09-29":1,"2026-09-30":1,"2026-10-07":1,"2026-10-08":1
+};
+const duplicateReview={
+  "2026-08-19":"Possible duplicate morning meeting: another 0.5 h PS meeting already existed.",
+  "2026-09-09":"Likely duplicate: two identical new 0.5 h PS morning meetings plus an older 0.5 h morning meeting are visible.",
+  "2026-09-29":"Possible duplicate morning meeting: two 0.5 h PS morning-meeting entries are visible.",
+  "2026-10-07":"Possible duplicate morning meeting: two 0.5 h PS entries are visible.",
+  "2026-10-08":"Possible duplicate morning meeting: two 0.5 h PS entries are visible."
+};
+function recurringDetailsFor(date){
+  const count=latestRecurringMeetings[date]||0;
+  return Array.from({length:count},()=>({
+    accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"
+  }));
+}
 
 function saved(){try{return JSON.parse(localStorage.getItem("timeentry-entries")||"[]")}catch(_){return[]}}
 function saveAll(data){localStorage.setItem("timeentry-entries",JSON.stringify(data))}
@@ -469,7 +508,7 @@ function historicalRows(){
       }
       out.push({
         date,submitted,queued:queuedHours,effective,remaining,breakdown,complete:effective>=7,
-        submittedEntries:historicalDetails[date]||[],
+        submittedEntries:[...(historicalDetails[date]||[]),...recurringDetailsFor(date)],
         queuedEntries:q.entries||[]
       });
     }
@@ -513,9 +552,12 @@ function renderHistorical(){
       '</div>'
     ).join("");
 
+    const duplicateNote=duplicateReview[r.date]
+      ? '<div class="history-duplicate-warning">⚠ Duplicate review: '+duplicateReview[r.date]+'</div>'
+      : "";
     const detailsContent=(submittedLines||queuedLines)
-      ? (submittedLines+queuedLines)
-      : '<p class="history-no-details">No submitted details for this date.</p>';
+      ? (submittedLines+queuedLines+duplicateNote)
+      : ('<p class="history-no-details">No submitted details for this date.</p>'+duplicateNote);
 
     return '<article class="history-day '+(r.complete?"is-complete":"is-missing")+'">'+
       '<div class="history-day-top"><div><strong>'+formatHistoryDate(r.date)+'</strong><small>'+r.submitted.toFixed(1)+' submitted • '+r.effective.toFixed(1)+' / 7.0 h including queue</small></div>'+status+'</div>'+
