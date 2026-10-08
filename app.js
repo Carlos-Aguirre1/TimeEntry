@@ -508,9 +508,22 @@ function renderMultiDates(selectedDates=[]){
           ? r.effective.toFixed(1)+" h logged"+(r.effective>7?" • +"+(r.effective-7).toFixed(1)+" over":"")
           : r.remaining.toFixed(1)+" h missing")
       : "No history";
+
+    const submitted=(r?.submittedEntries||[]).map(x=>
+      '<div class="multi-existing-row"><strong>'+x.accountCode+'</strong><span>'+x.type+' • '+Number(x.hours).toFixed(1)+' h</span><small>'+x.details+'</small></div>'
+    ).join("");
+
+    const queued=(r?.queuedEntries||[]).map(x=>
+      '<div class="multi-existing-row queued"><strong>'+x.accountCode+'</strong><span>'+x.type+' • '+Number(x.hours).toFixed(1)+' h • QUEUED</span><small>'+x.details+'</small></div>'
+    ).join("");
+
+    const details=(submitted||queued)
+      ? '<div class="multi-existing">'+submitted+queued+'</div>'
+      : '<div class="multi-existing empty">No existing entries shown for this date.</div>';
+
     return '<label class="multi-date-option '+(r?.complete?"complete":"")+'">'+
       '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+'>'+
-      '<span><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small></span>'+
+      '<span class="multi-date-copy"><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small>'+details+'</span>'+
     '</label>';
   }).join("");
 }
