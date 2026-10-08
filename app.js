@@ -29,6 +29,7 @@ let saveLocked=false;
 let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
 let historicalFilter="all";
 let historicalMonth=null;
+let historicalQuarter=null;
 let multiDateFilter="all";
 let catchupContext=null;
 const HISTORY_START="2026-08-01";
@@ -322,19 +323,81 @@ function latestHistoricalDate(){
 function historyEndDate(){
   return [todayISO(),latestHistoricalDate()].sort().pop();
 }
-function monthHistorySummary(){
-  const rows=historicalRows();
-  const defs=[
+const QUARTERS=[
+  {key:"Q1",label:"Q1",start:"2026-08-01",end:"2026-10-31",months:[
     {key:"2026-08",label:"August",start:"2026-08-01",end:"2026-08-31"},
     {key:"2026-09",label:"September",start:"2026-09-01",end:"2026-09-30"},
-    {key:"2026-10",label:"October",start:"2026-10-01",end:historyEndDate()}
-  ];
-  return defs.map(m=>{
-    const monthRows=rows.filter(r=>r.date>=m.start&&r.date<=m.end);
+    {key:"2026-10",label:"October",start:"2026-10-01",end:"2026-10-31"}
+  ]},
+  {key:"Q2",label:"Q2",start:"2026-11-01",end:"2027-01-31",months:[
+    {key:"2026-11",label:"November",start:"2026-11-01",end:"2026-11-30"},
+    {key:"2026-12",label:"December",start:"2026-12-01",end:"2026-12-31"},
+    {key:"2027-01",label:"January",start:"2027-01-01",end:"2027-01-31"}
+  ]},
+  {key:"Q3",label:"Q3",start:"2027-02-01",end:"2027-04-30",months:[
+    {key:"2027-02",label:"February",start:"2027-02-01",end:"2027-02-28"},
+    {key:"2027-03",label:"March",start:"2027-03-01",end:"2027-03-31"},
+    {key:"2027-04",label:"April",start:"2027-04-01",end:"2027-04-30"}
+  ]},
+  {key:"Q4",label:"Q4",start:"2027-05-01",end:"2027-07-31",months:[
+    {key:"2027-05",label:"May",start:"2027-05-01",end:"2027-05-31"},
+    {key:"2027-06",label:"June",start:"2027-06-01",end:"2027-06-30"},
+    {key:"2027-07",label:"July",start:"2027-07-01",end:"2027-07-31"}
+  ]}
+];
+function quarterByKey(key){return QUARTERS.find(q=>q.key===key)||QUARTERS[0]}
+function currentQuarter(){
+  const ref=historyEndDate();
+  return QUARTERS.find(q=>ref>=q.start&&ref<=q.end)||QUARTERS[0];
+}
+function rowsForQuarter(key){
+  const q=quarterByKey(key);
+  return historicalRows().filter(r=>r.date>=q.start&&r.date<=q.end);
+}
+function quarterSummary(key){
+  const q=quarterByKey(key);
+  const rows=rowsForQuarter(key);
+  const expected=rows.filter(r=>!r.vacation).length*7;
+  const logged=rows.reduce((n,r)=>n+r.submitted,0);
+  const queued=rows.reduce((n,r)=>n+r.queued,0);
+  const missing=rows.reduce((n,r)=>n+r.remaining,0);
+  return {...q,expected,logged,queued,missing};
+}
+function renderSplashQuarters(){
+  const box=$("#splashQuarterSummary");
+  if(!box)return;
+  const current=currentQuarter().key;
+  box.innerHTML=QUARTERS.map(q=>{
+    const s=quarterSummary(q.key);
+    const active=q.key===current;
+    const hasRows=rowsForQuarter(q.key).length>0;
+    return '<button type="button" class="quarter-card '+(active?'active':'')+'" data-quarter="'+q.key+'">'+
+      '<span class="quarter-name">'+q.label+'</span>'+
+      '<span class="quarter-range">'+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+' – '+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,"")+'</span>'+
+      (hasRows
+        ? '<strong>'+s.logged.toFixed(1)+' / '+s.expected.toFixed(1)+' h</strong><small>'+s.missing.toFixed(1)+' h missing</small>'
+        : '<strong>Upcoming</strong><small>No expected hours yet</small>')+
+    '</button>';
+  }).join("");
+  box.querySelectorAll("[data-quarter]").forEach(b=>b.onclick=()=>{
+    historicalQuarter=b.dataset.quarter;
+    historicalMonth=null;
+    historicalFilter="all";
+    showOnly("historicalScreen");
+    renderHistorical();
+  });
+}
+
+function monthHistorySummary(){
+  const q=quarterByKey(historicalQuarter||currentQuarter().key);
+  const rows=historicalRows();
+  return q.months.map(m=>{
+    const effectiveEnd=[m.end,historyEndDate()].sort()[0];
+    const monthRows=rows.filter(r=>r.date>=m.start&&r.date<=effectiveEnd);
     const expected=monthRows.filter(r=>!r.vacation).length*7;
     const logged=monthRows.reduce((n,r)=>n+r.submitted,0);
     const queued=monthRows.reduce((n,r)=>n+r.queued,0);
-    return {...m,expected,logged,queued,gap:Math.max(0,expected-(logged+queued))};
+    return {...m,end:effectiveEnd,expected,logged,queued,gap:Math.max(0,expected-(logged+queued))};
   });
 }
 
@@ -614,7 +677,9 @@ function historicalRows(){
 }
 function renderHistorical(){
   const rows=historicalRows();
+  const q=quarterByKey(historicalQuarter||currentQuarter().key);
   const visibleRows=rows.filter(r=>{
+    if(r.date<q.start||r.date>q.end)return false;
     if(historicalMonth && !r.date.startsWith(historicalMonth))return false;
     if(historicalFilter==="all")return true;
     if(historicalFilter==="missing")return !r.complete;
@@ -623,12 +688,14 @@ function renderHistorical(){
     if(historicalFilter==="vacation")return r.vacation;
     return true;
   });
-  const missingHours=rows.reduce((sum,r)=>sum+r.remaining,0);
-  const incomplete=rows.filter(r=>!r.vacation&&!r.complete).length;
-  const queuedHours=rows.reduce((sum,r)=>sum+r.queued,0);
+  const quarterRows=rows.filter(r=>r.date>=q.start&&r.date<=q.end);
+  const missingHours=quarterRows.reduce((sum,r)=>sum+r.remaining,0);
+  const incomplete=quarterRows.filter(r=>!r.vacation&&!r.complete).length;
+  const queuedHours=quarterRows.reduce((sum,r)=>sum+r.queued,0);
   $("#historicalMissingHours").textContent=missingHours.toFixed(1);
   $("#historicalIncompleteDays").textContent=String(incomplete);
   $("#historicalQueuedHours").textContent=queuedHours.toFixed(1);
+  $("#historicalPeriodLabel").textContent=q.label+" • "+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+" – "+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,"")+" • 7 HOURS MON–FRI";
   const monthSummary=monthHistorySummary();
   const monthBox=$("#historicalMonthSummary");
   if(monthBox){
@@ -636,10 +703,10 @@ function renderHistorical(){
     const totalLogged=monthSummary.reduce((n,m)=>n+m.logged,0);
     const totalQueued=monthSummary.reduce((n,m)=>n+m.queued,0);
     monthBox.innerHTML=
-      '<div class="month-summary-total"><strong>'+totalLogged.toFixed(1)+' / '+totalExpected.toFixed(1)+' h</strong><span>logged / expected • Aug–Oct through '+formatHistoryDate(historyEndDate())+'</span></div>'+
+      '<div class="month-summary-total"><strong>'+totalLogged.toFixed(1)+' / '+totalExpected.toFixed(1)+' h</strong><span>'+q.label+' logged / expected • through '+formatHistoryDate([q.end,historyEndDate()].sort()[0])+'</span></div>'+
       monthSummary.map(m=>
         '<button type="button" class="month-summary-row month-summary-select '+(historicalMonth===m.key?'selected':'')+'" data-history-month="'+m.key+'">'+
-          '<div><strong>'+m.label+'</strong><small>'+(m.key==="2026-10"?'through '+formatHistoryDate(m.end):'full month')+'</small></div>'+
+          '<div><strong>'+m.label+'</strong><small>'+(m.end<historyEndDate()?'full month':'through '+formatHistoryDate(m.end))+'</small></div>'+
           '<div class="month-summary-metrics">'+
             '<span><b>'+m.logged.toFixed(1)+'</b> logged</span>'+
             '<span><b>'+m.expected.toFixed(1)+'</b> expected</span>'+
@@ -659,8 +726,8 @@ function renderHistorical(){
   const monthNav=$("#historicalMonthNav");
   if(monthNav){
     monthNav.classList.toggle("hidden",!historicalMonth);
-    const keys=["2026-08","2026-09","2026-10"];
-    const labels={"2026-08":"August","2026-09":"September","2026-10":"October"};
+    const keys=q.months.map(m=>m.key);
+    const labels=Object.fromEntries(q.months.map(m=>[m.key,m.label]));
     const idx=historicalMonth?keys.indexOf(historicalMonth):-1;
     $("#historyMonthNavLabel").textContent=historicalMonth?labels[historicalMonth]+" 2026":"";
     $("#historyPrevMonthBtn").disabled=idx<=0;
@@ -749,6 +816,7 @@ function renderHistorical(){
 }
 function openHistorical(){
   catchupContext=null;
+  historicalQuarter=currentQuarter().key;
   historicalMonth=null;
   historicalFilter="all";
   renderHistorical();
@@ -997,6 +1065,7 @@ function setupRadialWheel(){
 }
 
 $("#entryType").innerHTML='<option value="">--None--</option>'+types.map(t=>'<option>'+t+'</option>').join("");
+renderSplashQuarters();
 $("#enterAppBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multipleEntriesBtn").onclick=()=>openMultipleEntries(false);
 $("#multiNavBtn").onclick=()=>openMultipleEntries(false);
