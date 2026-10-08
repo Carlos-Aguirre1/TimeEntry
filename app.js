@@ -401,7 +401,7 @@ function monthHistorySummary(){
   });
 }
 
-function showOnly(id){["splashScreen","portfolioScreen","entryScreen","multiEntryScreen","historicalScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
+function showOnly(id){["splashScreen","portfolioScreen","entryScreen","multiEntryScreen","historicalScreen","customerHoursScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
 
 function customerBadge(c){return '<span class="player-photo customer-avatar"><strong>'+c.short+'</strong></span>'}
 function renderPortfolio(){
@@ -675,6 +675,78 @@ function historicalRows(){
   }
   return out;
 }
+function customerPeriodOptions(){
+  const q=quarterByKey(historicalQuarter||currentQuarter().key);
+  return [
+    {value:q.key,label:q.label+" • "+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+" – "+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,""),start:q.start,end:q.end},
+    ...q.months.map(m=>({value:m.key,label:m.label,start:m.start,end:[m.end,historyEndDate()].sort()[0]}))
+  ];
+}
+function customerPeriodByValue(value){
+  return customerPeriodOptions().find(x=>x.value===value)||customerPeriodOptions()[0];
+}
+function customerHoursForPeriod(periodValue){
+  const p=customerPeriodByValue(periodValue);
+  const rows=historicalRows().filter(r=>r.date>=p.start&&r.date<=p.end);
+  const totals={};
+  for(const r of rows){
+    for(const [code,hours] of Object.entries(r.breakdown||{})){
+      totals[code]=(totals[code]||0)+(Number(hours)||0);
+    }
+  }
+  return {period:p,rows,totals};
+}
+function renderCustomerHours(periodValue){
+  const select=$("#customerHoursPeriod");
+  const options=customerPeriodOptions();
+  if(!select.options.length || [...select.options].map(o=>o.value).join("|")!==options.map(o=>o.value).join("|")){
+    select.innerHTML=options.map(o=>'<option value="'+o.value+'">'+o.label+'</option>').join("");
+  }
+  const chosen=periodValue||select.value||(historicalMonth||quarterByKey(historicalQuarter||currentQuarter().key).key);
+  select.value=options.some(o=>o.value===chosen)?chosen:options[0].value;
+  const data=customerHoursForPeriod(select.value);
+  const entries=Object.entries(data.totals).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((n,[,h])=>n+h,0);
+  $("#customerHoursTotal").innerHTML=
+    '<strong>'+total.toFixed(1)+' h</strong><span>logged across '+entries.length+' customer/account codes • '+data.period.label+'</span>';
+  $("#customerHoursGrid").innerHTML=entries.length?entries.map(([code,hours])=>{
+    const pct=total?Math.round((hours/total)*100):0;
+    return '<button type="button" class="customer-hours-card" data-customer-code="'+code+'">'+
+      '<div class="customer-hours-card-top"><strong>'+code+'</strong><span>'+hours.toFixed(1)+' h</span></div>'+
+      '<div class="customer-hours-bar"><span style="width:'+pct+'%"></span></div>'+
+      '<small>'+pct+'% of logged time</small>'+
+    '</button>';
+  }).join(""):'<p class="empty-history">No logged customer hours in this timeframe.</p>';
+  $("#customerHoursGrid").querySelectorAll("[data-customer-code]").forEach(b=>b.onclick=()=>renderCustomerHoursDetail(b.dataset.customerCode,select.value));
+  $("#customerHoursDetailCard").classList.add("hidden");
+}
+function renderCustomerHoursDetail(code,periodValue){
+  const data=customerHoursForPeriod(periodValue);
+  const rows=data.rows.filter(r=>Number(r.breakdown?.[code])>0);
+  const total=rows.reduce((n,r)=>n+(Number(r.breakdown?.[code])||0),0);
+  $("#customerHoursDetailTitle").textContent=code+" • "+total.toFixed(1)+" h";
+  $("#customerHoursDetailPeriod").textContent=data.period.label;
+  $("#customerHoursDetail").innerHTML=rows.map(r=>{
+    const matching=[...(r.submittedEntries||[]),...(r.queuedEntries||[])].filter(x=>x.accountCode===code);
+    const captured=matching.reduce((n,x)=>n+(Number(x.hours)||0),0);
+    const actual=Number(r.breakdown?.[code])||0;
+    const detail=matching.map(x=>
+      '<div class="customer-hour-entry"><strong>'+x.type+' • '+Number(x.hours).toFixed(1)+' h</strong><p>'+x.details+'</p></div>'
+    ).join("");
+    const remainder=Math.max(0,actual-captured);
+    return '<article class="customer-hour-day">'+
+      '<div class="customer-hour-day-head"><strong>'+formatHistoryDate(r.date)+'</strong><span>'+actual.toFixed(1)+' h</span></div>'+
+      detail+
+      (remainder>0?'<div class="customer-hour-entry uncaptured"><strong>'+remainder.toFixed(1)+' h</strong><p>Details not yet captured from the Salesforce snapshot.</p></div>':'')+
+    '</article>';
+  }).join("")||'<p class="empty-history">No entries for this customer in the selected timeframe.</p>';
+  $("#customerHoursDetailCard").classList.remove("hidden");
+  $("#customerHoursDetailCard").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function openCustomerHours(){
+  showOnly("customerHoursScreen");
+  renderCustomerHours(historicalMonth||quarterByKey(historicalQuarter||currentQuarter().key).key);
+}
 function renderHistorical(){
   const rows=historicalRows();
   const q=quarterByKey(historicalQuarter||currentQuarter().key);
@@ -711,7 +783,11 @@ function renderHistorical(){
             '<span><b>'+m.logged.toFixed(1)+'</b> logged</span>'+
             '<span><b>'+m.expected.toFixed(1)+'</b> expected</span>'+
             (m.queued?'<span><b>'+m.queued.toFixed(1)+'</b> queued</span>':'')+
-            '<span class="'+(m.gap>0?'month-gap':'month-good')+'"><b>'+m.gap.toFixed(1)+'</b> gap</span>'+
+            ((m.logged+m.queued)>m.expected
+              ? '<span class="month-over"><b>✓ +'+((m.logged+m.queued)-m.expected).toFixed(1)+'</b> over</span>'
+              : ((m.logged+m.queued)===m.expected
+                ? '<span class="month-good"><b>✓</b> complete</span>'
+                : '<span class="month-gap"><b>'+m.gap.toFixed(1)+'</b> gap</span>'))+
           '</div>'+
         '</button>'
       ).join("");
@@ -1078,6 +1154,10 @@ $("#brandHomeBtn").onclick=openQuarterlyDashboard;
 $("#enterAppBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multipleEntriesBtn").onclick=()=>openMultipleEntries(false);
 $("#multiNavBtn").onclick=()=>openMultipleEntries(false);
+$("#historicalCustomerBtn").onclick=openCustomerHours;
+$("#customerHoursBackBtn").onclick=()=>{showOnly("historicalScreen");renderHistorical()};
+$("#customerHoursPeriod").onchange=()=>renderCustomerHours($("#customerHoursPeriod").value);
+$("#customerHoursDetailClose").onclick=()=>$("#customerHoursDetailCard").classList.add("hidden");
 $("#historicalMultipleBtn").onclick=()=>openMultipleEntries(true);
 $("#multiBackBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multiSelectWeekdaysBtn").onclick=()=>renderMultiDates(historicalRows().filter(r=>!r.vacation&&!r.complete).map(r=>r.date));
