@@ -4,15 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=49">
+<link rel="stylesheet" href="styles.css?v=50">
 </head>
 <body>
 <header>
-  <div class="brand">
+  <button id="brandHomeBtn" class="brand brand-home" type="button" aria-label="Go to quarterly dashboard">
     <div class="app-mark">TE</div>
     <div><small>MCPME • TIMEENTRY</small><h1>Fast Time Entry</h1></div>
-  </div>
+  </button>
   <div class="top-nav">
+    <button id="quarterlyNavBtn" class="ghost">Quarterly</button>
     <button id="fastEntryNavBtn" class="ghost">Fast Entry</button>
     <button id="multiNavBtn" class="ghost">Multiple</button>
     <button id="historicalNavBtn" class="ghost">Historical</button>
@@ -25,7 +26,7 @@
       <div class="app-mark large">TE</div>
       <small>MCPME • TIMEENTRY</small>
       <h1>Fast Time Entry</h1>
-      <div class="version-badge">Prototype v49</div>
+      <div class="version-badge">Prototype v50</div>
       <h2>Customer. Time. Details. Done.</h2>
       <p>Capture CRM-ready time entries quickly from your phone, then transfer the queue to your laptop.</p>
       <div id="splashQuarterSummary" class="splash-quarter-summary" aria-label="Quarter hour summary"></div>
@@ -224,6 +225,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=49"></script>
+<script src="app.js?v=50"></script>
 </body>
 </html>
