@@ -739,6 +739,8 @@ function renderMultiDates(selectedDates=[]){
   const rowsByDate=Object.fromEntries(historicalRows().map(r=>[r.date,r]));
   $("#multiDateGrid").innerHTML=batchDateRange().map(date=>{
     const r=rowsByDate[date];
+    const statusKind=!r || r.effective===0 ? "empty" : (r.complete ? "complete" : "partial");
+    const statusIcon=statusKind==="complete" ? "✓" : (statusKind==="empty" ? "!" : "!");
     const meta=r
       ? (r.complete
           ? r.effective.toFixed(1)+" h logged"+(r.effective>7?" • +"+(r.effective-7).toFixed(1)+" over":"")
@@ -763,9 +765,10 @@ function renderMultiDates(selectedDates=[]){
       ? '<div class="multi-existing-list">'+submitted+queued+'</div>'
       : '<div class="multi-existing-empty">No recorded entry details for this date.</div>';
 
-    return '<label class="multi-date-option '+(r?.complete?"complete":"")+'">'+
+    return '<label class="multi-date-option '+statusKind+'">'+
       '<div class="multi-date-select-row">'+
         '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+'>'+
+        '<span class="multi-date-status '+statusKind+'" aria-hidden="true">'+statusIcon+'</span>'+
         '<span><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small></span>'+
       '</div>'+
       entries+
