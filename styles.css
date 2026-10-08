@@ -833,3 +833,37 @@ button:disabled{opacity:.55;cursor:default}
   .month-vacation-btn{width:100%}
   .vacation-calendar{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
+
+/* v53 Ontario statutory holidays + full-quarter expected hours */
+.time-status-icon.holiday,.multi-date-status.holiday{
+  background:#f0eaff;
+  border:2px solid #8d74c7;
+  color:#563b91;
+}
+.history-status.holiday{
+  background:#f0eaff;
+  color:#563b91;
+}
+.history-day.is-holiday,
+.multi-date-option.holiday{
+  background:#faf7ff;
+  border-color:#c7b8e6;
+}
+.history-holiday-note{
+  margin-top:8px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:#f0eaff;
+  border:1px solid #c7b8e6;
+  color:#563b91;
+  font-size:10px;
+  font-weight:900;
+}
+.multi-date-status-label.holiday{
+  background:#f0eaff;
+  color:#563b91;
+  border:1px solid #8d74c7;
+}
+.historical-filters button[data-history-filter="holiday"]{
+  flex:1 1 100%;
+}
