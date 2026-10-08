@@ -960,3 +960,80 @@ button:disabled{opacity:.55;cursor:default}
     font-size:13px;
   }
 }
+
+/* v57 compact dashboard-first splash */
+.splash-screen{
+  padding-top:34px!important;
+}
+.splash-logo{
+  display:none!important;
+}
+.splash-compact-head{
+  width:min(760px,100%);
+  margin:0 auto 8px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  text-align:left;
+}
+.splash-compact-head .eyebrow{
+  margin:0 0 2px;
+}
+.splash-compact-head h1{
+  margin:0;
+  font-size:clamp(28px,5vw,44px);
+  line-height:1;
+}
+.splash-copy.compact{
+  width:min(760px,100%);
+  margin:0 auto 12px;
+  text-align:left;
+  font-size:13px;
+}
+.splash-quarter-summary{
+  margin-top:10px!important;
+}
+.quarter-card{
+  min-height:176px;
+  padding-top:14px;
+}
+.quarter-name{
+  font-size:22px!important;
+}
+.quarter-completion{
+  top:12px!important;
+  right:12px!important;
+  width:58px!important;
+  height:58px!important;
+  font-size:16px!important;
+}
+.quarter-card strong{
+  font-size:21px!important;
+}
+.splash-benefits{
+  margin-top:14px!important;
+}
+@media(max-width:650px){
+  .splash-screen{padding-top:22px!important}
+  .splash-compact-head{
+    align-items:center;
+    padding:0 18px;
+  }
+  .splash-compact-head h1{
+    font-size:34px;
+  }
+  .splash-copy.compact{
+    padding:0 18px;
+    font-size:12px;
+  }
+  .quarter-card{
+    min-height:190px;
+    padding-right:66px!important;
+  }
+  .quarter-completion{
+    width:52px!important;
+    height:52px!important;
+    font-size:14px!important;
+  }
+}
