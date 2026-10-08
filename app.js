@@ -336,6 +336,22 @@ const ONTARIO_STAT_HOLIDAYS={
   "2027-07-01":"Canada Day"
 };
 function statutoryHolidayName(date){return ONTARIO_STAT_HOLIDAYS[date]||""}
+function holidaysInRange(start,end){
+  return Object.entries(ONTARIO_STAT_HOLIDAYS)
+    .filter(([date])=>date>=start&&date<=end)
+    .sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([date,name])=>({date,name}));
+}
+function holidayShortDate(date){
+  const [y,m,d]=date.split("-").map(Number);
+  return new Date(y,m-1,d).toLocaleDateString("en-CA",{month:"short",day:"numeric"});
+}
+function holidaySummaryText(start,end){
+  const list=holidaysInRange(start,end);
+  if(!list.length)return "0 Ontario statutory holidays";
+  return list.length+" Ontario statutory holiday"+(list.length===1?"":"s")+": "+
+    list.map(h=>h.name+" ("+holidayShortDate(h.date)+")").join(", ");
+}
 function isStatutoryHoliday(date){return !!statutoryHolidayName(date)}
 function weekdaysBetween(start,end){
   const [sy,sm,sd]=start.split("-").map(Number);
@@ -411,8 +427,12 @@ function renderSplashQuarters(){
       '<span class="quarter-name">'+q.label+'</span>'+
       '<span class="quarter-range">'+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+' – '+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,"")+'</span>'+
       (hasRows
-        ? '<strong>'+s.logged.toFixed(1)+' / '+s.expected.toFixed(1)+' h</strong><small>'+s.missing.toFixed(1)+' h missing • Quarter target '+s.fullExpected.toFixed(1)+' h</small>'
-        : '<strong>'+s.fullExpected.toFixed(1)+' h expected</strong><small>Ontario statutory holidays excluded</small>')+
+        ? '<strong>'+s.logged.toFixed(1)+' / '+s.expected.toFixed(1)+' h</strong>'+
+          '<small>'+s.missing.toFixed(1)+' h missing • Quarter target '+s.fullExpected.toFixed(1)+' h</small>'+
+          '<em class="quarter-holiday-note">'+holidaySummaryText(q.start,q.end)+'</em>'
+        : '<strong>'+s.fullExpected.toFixed(1)+' h expected</strong>'+
+          '<small>Statutory holidays excluded</small>'+
+          '<em class="quarter-holiday-note">'+holidaySummaryText(q.start,q.end)+'</em>')+
     '</button>';
   }).join("");
   box.querySelectorAll("[data-quarter]").forEach(b=>b.onclick=()=>{
@@ -874,7 +894,9 @@ function renderHistorical(){
       monthSummary.map(m=>
         '<div class="month-summary-wrap '+(historicalMonth===m.key?'selected':'')+'">'+
           '<button type="button" class="month-summary-row month-summary-select" data-history-month="'+m.key+'">'+
-            '<div><strong>'+m.label+'</strong><small>'+(m.end<historyEndDate()?'full month':'through '+formatHistoryDate(m.end))+'</small></div>'+
+            '<div><strong>'+m.label+'</strong><small>'+(m.end<historyEndDate()?'full month':'through '+formatHistoryDate(m.end))+'</small>'+
+            (holidaysInRange(m.start,m.end).length?'<em class="month-holiday-note">'+holidaySummaryText(m.start,m.end)+'</em>':'')+
+          '</div>'+
             '<div class="month-summary-metrics">'+
               '<span><b>'+m.logged.toFixed(1)+'</b> logged</span>'+
               '<span><b>'+m.expected.toFixed(1)+'</b> expected</span>'+
