@@ -32,6 +32,7 @@ let historicalMonth=null;
 let historicalQuarter=null;
 let multiDateFilter="all";
 let catchupContext=null;
+let vacationEditingMonth=null;
 const HISTORY_START="2026-08-01";
 const expandedHistoricalDays=new Set();
 
@@ -605,11 +606,16 @@ async function copyJson(){
 }
 
 function vacationDates(){
-  try{return new Set(JSON.parse(localStorage.getItem("timeentry-vacation-dates")||"[]"))}
-  catch(_){return new Set()}
+  try{
+    const primary=JSON.parse(localStorage.getItem("timeentry-vacation-dates-v1")||"[]");
+    const legacy=JSON.parse(localStorage.getItem("timeentry-vacation-dates")||"[]");
+    return new Set([...(Array.isArray(primary)?primary:[]),...(Array.isArray(legacy)?legacy:[])]);
+  }catch(_){return new Set()}
 }
 function saveVacationDates(set){
-  localStorage.setItem("timeentry-vacation-dates",JSON.stringify([...set].sort()));
+  const value=JSON.stringify([...set].sort());
+  localStorage.setItem("timeentry-vacation-dates-v1",value);
+  localStorage.setItem("timeentry-vacation-dates",value);
 }
 function isVacationDate(date){return vacationDates().has(date)}
 function toggleVacationDate(date){
@@ -617,6 +623,58 @@ function toggleVacationDate(date){
   if(set.has(date))set.delete(date);else set.add(date);
   saveVacationDates(set);
   renderHistorical();
+}
+function monthWorkdays(monthKey){
+  const [y,m]=monthKey.split("-").map(Number);
+  const last=new Date(y,m,0).getDate();
+  const out=[];
+  for(let d=1;d<=last;d++){
+    const dt=new Date(y,m-1,d);
+    const wd=dt.getDay();
+    if(wd>=1&&wd<=5){
+      out.push(monthKey+"-"+String(d).padStart(2,"0"));
+    }
+  }
+  return out;
+}
+function renderVacationCalendar(monthKey){
+  vacationEditingMonth=monthKey;
+  const all=vacationDates();
+  const month=quarterByKey(historicalQuarter||currentQuarter().key).months.find(m=>m.key===monthKey);
+  const label=month?.label||monthKey;
+  $("#vacationModalTitle").textContent=label+" vacation days";
+  const days=monthWorkdays(monthKey);
+  $("#vacationCalendar").innerHTML=days.map(date=>{
+    const [y,m,d]=date.split("-").map(Number);
+    const dt=new Date(y,m-1,d);
+    const dayName=dt.toLocaleDateString("en-CA",{weekday:"short"});
+    const selected=all.has(date);
+    return '<label class="vacation-day '+(selected?'selected':'')+'">'+
+      '<input type="checkbox" value="'+date+'" '+(selected?'checked':'')+'>'+
+      '<span><strong>'+dayName+'</strong><b>'+d+'</b></span>'+
+    '</label>';
+  }).join("");
+  $("#vacationCalendar").querySelectorAll('input[type="checkbox"]').forEach(input=>{
+    input.onchange=()=>input.closest(".vacation-day").classList.toggle("selected",input.checked);
+  });
+}
+function openVacationPicker(monthKey){
+  renderVacationCalendar(monthKey);
+  $("#vacationModal").classList.remove("hidden");
+}
+function closeVacationPicker(){
+  $("#vacationModal").classList.add("hidden");
+  vacationEditingMonth=null;
+}
+function saveVacationMonth(){
+  if(!vacationEditingMonth)return;
+  const set=vacationDates();
+  monthWorkdays(vacationEditingMonth).forEach(d=>set.delete(d));
+  $("#vacationCalendar").querySelectorAll('input[type="checkbox"]:checked').forEach(x=>set.add(x.value));
+  saveVacationDates(set);
+  closeVacationPicker();
+  renderHistorical();
+  renderSplashQuarters();
 }
 function timeStatusKind(effective){
   const h=Number(effective)||0;
@@ -777,25 +835,32 @@ function renderHistorical(){
     monthBox.innerHTML=
       '<div class="month-summary-total"><strong>'+totalLogged.toFixed(1)+' / '+totalExpected.toFixed(1)+' h</strong><span>'+q.label+' logged / expected • through '+formatHistoryDate([q.end,historyEndDate()].sort()[0])+'</span></div>'+
       monthSummary.map(m=>
-        '<button type="button" class="month-summary-row month-summary-select '+(historicalMonth===m.key?'selected':'')+'" data-history-month="'+m.key+'">'+
-          '<div><strong>'+m.label+'</strong><small>'+(m.end<historyEndDate()?'full month':'through '+formatHistoryDate(m.end))+'</small></div>'+
-          '<div class="month-summary-metrics">'+
-            '<span><b>'+m.logged.toFixed(1)+'</b> logged</span>'+
-            '<span><b>'+m.expected.toFixed(1)+'</b> expected</span>'+
-            (m.queued?'<span><b>'+m.queued.toFixed(1)+'</b> queued</span>':'')+
-            ((m.logged+m.queued)>m.expected
-              ? '<span class="month-over"><b>✓ +'+((m.logged+m.queued)-m.expected).toFixed(1)+'</b> over</span>'
-              : ((m.logged+m.queued)===m.expected
-                ? '<span class="month-good"><b>✓</b> complete</span>'
-                : '<span class="month-gap"><b>'+m.gap.toFixed(1)+'</b> gap</span>'))+
-          '</div>'+
-        '</button>'
+        '<div class="month-summary-wrap '+(historicalMonth===m.key?'selected':'')+'">'+
+          '<button type="button" class="month-summary-row month-summary-select" data-history-month="'+m.key+'">'+
+            '<div><strong>'+m.label+'</strong><small>'+(m.end<historyEndDate()?'full month':'through '+formatHistoryDate(m.end))+'</small></div>'+
+            '<div class="month-summary-metrics">'+
+              '<span><b>'+m.logged.toFixed(1)+'</b> logged</span>'+
+              '<span><b>'+m.expected.toFixed(1)+'</b> expected</span>'+
+              (m.queued?'<span><b>'+m.queued.toFixed(1)+'</b> queued</span>':'')+
+              ((m.logged+m.queued)>m.expected
+                ? '<span class="month-over"><b>✓ +'+((m.logged+m.queued)-m.expected).toFixed(1)+'</b> over</span>'
+                : ((m.logged+m.queued)===m.expected
+                  ? '<span class="month-good"><b>✓</b> complete</span>'
+                  : '<span class="month-gap"><b>'+m.gap.toFixed(1)+'</b> gap</span>'))+
+            '</div>'+
+          '</button>'+
+          '<button type="button" class="month-vacation-btn" data-vacation-month="'+m.key+'">🏖 Vacation days</button>'+
+        '</div>'
       ).join("");
     monthBox.querySelectorAll("[data-history-month]").forEach(b=>b.onclick=()=>{
       historicalMonth=b.dataset.historyMonth;
       historicalFilter="all";
       renderHistorical();
       document.querySelector("#historicalMonthNav")?.scrollIntoView({behavior:"smooth",block:"nearest"});
+    });
+    monthBox.querySelectorAll("[data-vacation-month]").forEach(b=>b.onclick=e=>{
+      e.stopPropagation();
+      openVacationPicker(b.dataset.vacationMonth);
     });
   }
 
@@ -1158,6 +1223,15 @@ $("#historicalCustomerBtn").onclick=openCustomerHours;
 $("#customerHoursBackBtn").onclick=()=>{showOnly("historicalScreen");renderHistorical()};
 $("#customerHoursPeriod").onchange=()=>renderCustomerHours($("#customerHoursPeriod").value);
 $("#customerHoursDetailClose").onclick=()=>$("#customerHoursDetailCard").classList.add("hidden");
+$("#vacationModalClose").onclick=closeVacationPicker;
+$("#vacationSaveBtn").onclick=saveVacationMonth;
+$("#vacationClearMonthBtn").onclick=()=>{
+  $("#vacationCalendar").querySelectorAll('input[type="checkbox"]').forEach(x=>{
+    x.checked=false;
+    x.closest(".vacation-day").classList.remove("selected");
+  });
+};
+$("#vacationModal").onclick=e=>{if(e.target.id==="vacationModal")closeVacationPicker()};
 $("#historicalMultipleBtn").onclick=()=>openMultipleEntries(true);
 $("#multiBackBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multiSelectWeekdaysBtn").onclick=()=>renderMultiDates(historicalRows().filter(r=>!r.vacation&&!r.complete).map(r=>r.date));
