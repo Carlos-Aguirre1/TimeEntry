@@ -429,10 +429,10 @@ function renderSplashQuarters(){
       (hasRows
         ? '<strong>'+s.logged.toFixed(1)+' / '+s.expected.toFixed(1)+' h</strong>'+
           '<small>'+s.missing.toFixed(1)+' h missing • Quarter target '+s.fullExpected.toFixed(1)+' h</small>'+
-          '<em class="quarter-holiday-note">'+holidaySummaryText(q.start,q.end)+'</em>'
+          '<div class="quarter-holiday-box"><span class="quarter-holiday-count">H '+holidaysInRange(q.start,q.end).length+'</span><span>'+holidaySummaryText(q.start,q.end)+'</span></div>'
         : '<strong>'+s.fullExpected.toFixed(1)+' h expected</strong>'+
           '<small>Statutory holidays excluded</small>'+
-          '<em class="quarter-holiday-note">'+holidaySummaryText(q.start,q.end)+'</em>')+
+          '<div class="quarter-holiday-box"><span class="quarter-holiday-count">H '+holidaysInRange(q.start,q.end).length+'</span><span>'+holidaySummaryText(q.start,q.end)+'</span></div>')+
     '</button>';
   }).join("");
   box.querySelectorAll("[data-quarter]").forEach(b=>b.onclick=()=>{
