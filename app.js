@@ -29,6 +29,7 @@ let saveLocked=false;
 let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
 let historicalFilter="missing";
 let catchupContext=null;
+const HISTORY_START="2026-08-01";
 const expandedHistoricalDays=new Set();
 
 const historicalSubmitted={
@@ -360,21 +361,35 @@ function queuedByDate(){
 }
 function historicalRows(){
   const queued=queuedByDate();
-  return Object.keys(historicalSubmitted).sort().map(date=>{
-    const base=historicalSubmitted[date]||{hours:0,breakdown:{}};
-    const q=queued[date]||{hours:0,breakdown:{}};
-    const submitted=Number(base.hours)||0;
-    const queuedHours=Number(q.hours)||0;
-    const effective=submitted+queuedHours;
-    const remaining=Math.max(0,7-effective);
-    const breakdown={...base.breakdown};
-    for(const [code,hours] of Object.entries(q.breakdown||{}))breakdown[code]=(breakdown[code]||0)+hours;
-    return {
-      date,submitted,queued:queuedHours,effective,remaining,breakdown,complete:effective>=7,
-      submittedEntries:historicalDetails[date]||[],
-      queuedEntries:q.entries||[]
-    };
-  });
+  const out=[];
+  const [sy,sm,sd]=HISTORY_START.split("-").map(Number);
+  const [ey,em,ed]=todayISO().split("-").map(Number);
+  const cur=new Date(sy,sm-1,sd),last=new Date(ey,em-1,ed);
+
+  while(cur<=last){
+    const weekday=cur.getDay();
+    if(weekday>=1&&weekday<=5){
+      const off=cur.getTimezoneOffset();
+      const date=new Date(cur.getTime()-off*60000).toISOString().slice(0,10);
+      const base=historicalSubmitted[date]||{hours:0,breakdown:{}};
+      const q=queued[date]||{hours:0,breakdown:{},entries:[]};
+      const submitted=Number(base.hours)||0;
+      const queuedHours=Number(q.hours)||0;
+      const effective=submitted+queuedHours;
+      const remaining=Math.max(0,7-effective);
+      const breakdown={...base.breakdown};
+      for(const [code,hours] of Object.entries(q.breakdown||{})){
+        breakdown[code]=(breakdown[code]||0)+hours;
+      }
+      out.push({
+        date,submitted,queued:queuedHours,effective,remaining,breakdown,complete:effective>=7,
+        submittedEntries:historicalDetails[date]||[],
+        queuedEntries:q.entries||[]
+      });
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  return out;
 }
 function renderHistorical(){
   const rows=historicalRows();
@@ -443,9 +458,8 @@ function openHistorical(){
 }
 
 function batchDateRange(){
-  const historyDates=Object.keys(historicalSubmitted).sort();
-  const start=historyDates[0]||todayISO();
-  const end=[historyDates[historyDates.length-1]||todayISO(),todayISO()].sort().pop();
+  const start=HISTORY_START;
+  const end=todayISO();
   const [sy,sm,sd]=start.split("-").map(Number);
   const [ey,em,ed]=end.split("-").map(Number);
   const cur=new Date(sy,sm-1,sd),last=new Date(ey,em-1,ed),out=[];
