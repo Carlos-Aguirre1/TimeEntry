@@ -45,7 +45,7 @@ const historicalSubmitted={
   "2026-08-21":{hours:5.5,breakdown:{CRC:1.5,IS:1.5,BL:2.5}},
   "2026-08-24":{hours:6.5,breakdown:{KI:1.5,IS:1.5,BL:3.5}},
   "2026-08-25":{hours:4.5,breakdown:{PS:2.5,CPF:2}},
-  "2026-08-26":{hours:3.5,breakdown:{IS:1,OT:1.5,PS:1}},
+  "2026-08-26":{hours:5,breakdown:{IS:1,OT:1.5,PS:1,KI:1.5}},
   "2026-09-08":{hours:3,breakdown:{PS:3}},
   "2026-09-09":{hours:2.5,breakdown:{BL:2,PS:.5}},
   "2026-09-14":{hours:2,breakdown:{CRC:2}},
@@ -67,6 +67,74 @@ const historicalSubmitted={
 };
 
 const historicalDetails={
+  "2026-08-10":[
+    {accountCode:"KI",type:"Troubleshooting",hours:3,details:"Working with Josh from Kiosk on a development application upgrade package."},
+    {accountCode:"HC",type:"Initiative",hours:1.5,details:"Spending time with sales ops and Julie (AM) to determine what needs to be done when transferring license."},
+    {accountCode:"CPF",type:"Troubleshooting",hours:1.5,details:"Created script and shared with Yash to review the status of apps installed on iOS devices."},
+    {accountCode:"RB",type:"Troubleshooting",hours:3,details:"Upgrading environment with Anton. Troubleshooting installation/signing issue."}
+  ],
+  "2026-08-11":[
+    {accountCode:"IS",type:"Troubleshooting",hours:2.5,details:"Reviewing issue Jeff is running into with space and OS upgrade files."},
+    {accountCode:"HC",type:"Xsight",hours:2.5,details:"Meeting with Allen to discuss XSight initiatives and displaying value for his customer."}
+  ],
+  "2026-08-12":[
+    {accountCode:"HC",type:"Troubleshooting",hours:1,details:"Submitting cloud ticket to swap regkeys on server and request server be deleted."},
+    {accountCode:"OT",type:"Troubleshooting",hours:3,details:"Working with Shawn to troubleshoot Zebra software package deployment and OEM configuration."},
+    {accountCode:"HC",type:"Troubleshooting",hours:1.5,details:"Working with sales operations to correct the SIT for one of Allen's MobiControl instances."}
+  ],
+  "2026-08-13":[
+    {accountCode:"PS",type:"Xsight",hours:1.5,details:"Held meeting with local XSight team and reviewed project summary/prescriptive guidance."},
+    {accountCode:"HC",type:"Troubleshooting",hours:1.5,details:"Reviewing multi-tenant permission issues for Heartland."},
+    {accountCode:"BL",type:"Troubleshooting",hours:2,details:"Working with Nathan on determining what is causing the cellular dashboard not to load."},
+    {accountCode:"OT",type:"Troubleshooting",hours:1.5,details:"Coordinated a support engagement regarding an OnTrac application deployment issue."}
+  ],
+  "2026-08-14":[
+    {accountCode:"MAN",type:"Cadence Call",hours:1,details:"Reviewed ongoing support items and customer questions."},
+    {accountCode:"IS",type:"Cadence Call",hours:2,details:"Reviewed server storage constraints and OS upgrade planning."},
+    {accountCode:"TD",type:"Xsight",hours:2,details:"Discussed creating a restricted operator role for customer personnel."},
+    {accountCode:"HC",type:"Initiative",hours:2,details:"Participated in discussions regarding server decommissioning and cloud infrastructure cleanup."}
+  ],
+  "2026-08-17":[
+    {accountCode:"PS",type:"Xsight",hours:2,details:"Continued working on XSight maturity model."},
+    {accountCode:"IS",type:"Troubleshooting",hours:1.5,details:"Reviewed confirmation that development server storage modifications resolved upload issues."},
+    {accountCode:"OT",type:"Troubleshooting",hours:1.5,details:"Monitored follow-up communications from Support regarding APK deployment."},
+    {accountCode:"PS",type:"Xsight",hours:1,details:"Met regarding a custom dashboard feature request and held an ad-hoc discussion."}
+  ],
+  "2026-08-18":[
+    {accountCode:"PS",type:"Xsight",hours:2.5,details:"Continued working on XSight Maturity model and journey-step questions."},
+    {accountCode:"OT",type:"Troubleshooting",hours:2.5,details:"Continued troubleshooting around the Aspira kiosk application."}
+  ],
+  "2026-08-19":[
+    {accountCode:"HC",type:"Troubleshooting",hours:1.5,details:"Reviewed and tested JIRA IM-28365."},
+    {accountCode:"HC",type:"Other",hours:1.5,details:"Assisted Liz from Heartland updating a list of servers and asset information."},
+    {accountCode:"WM",type:"Troubleshooting",hours:2.5,details:"Weis Markets strategic monthly touchpoint."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team meeting"}
+  ],
+  "2026-08-20":[
+    {accountCode:"PS",type:"Other",hours:1.5,details:"TAM Transition Planning - walking through accounts that will be transitioned."},
+    {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"Aspira / Lockdown Configuration troubleshooting with the KIOSK team."}
+  ],
+  "2026-08-21":[
+    {accountCode:"CRC",type:"Cadence Call",hours:1.5,details:"Organized and hosted the CR California strategic touchpoint monthly."},
+    {accountCode:"IS",type:"Cadence Call",hours:1.5,details:"Hosted the IntegraServ weekly touch point."},
+    {accountCode:"BL",type:"Cadence Call",hours:2.5,details:"Monthly cadence meeting with BlueLinx."}
+  ],
+  "2026-08-24":[
+    {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"KIOSK customer migration planning initiative."},
+    {accountCode:"IS",type:"Troubleshooting",hours:1.5,details:"Storage expansion / cloud upgrade coordination."},
+    {accountCode:"BL",type:"Troubleshooting",hours:1.5,details:"HighRadius Pay & Remit investigation."},
+    {accountCode:"BL",type:"Troubleshooting",hours:2,details:"Prepared for and attended two working sessions with customer."}
+  ],
+  "2026-08-25":[
+    {accountCode:"PS",type:"Xsight",hours:2.5,details:"MCP / OAuth / QA environment testing."},
+    {accountCode:"CPF",type:"Troubleshooting",hours:2,details:"Customer escalation involving MobiControl application deployment failures."}
+  ],
+  "2026-08-26":[
+    {accountCode:"IS",type:"Troubleshooting",hours:1,details:"Workwear Outfitters escalation through IntegraServ."},
+    {accountCode:"OT",type:"Cadence Call",hours:1.5,details:"Prepared and hosted the OnTrac cadence meeting."},
+    {accountCode:"PS",type:"Other",hours:1,details:"Account transition - reviewing KIOSK environment and customer requirements."},
+    {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"Deep-dive troubleshooting session involving Aspira kiosk application behaviour."}
+  ],
   "2026-09-21":[
     {accountCode:"OT",type:"Other",hours:7,details:"Travelling to onsite QBR"}
   ],
@@ -510,20 +578,29 @@ function renderMultiDates(selectedDates=[]){
       : "No history";
 
     const submitted=(r?.submittedEntries||[]).map(x=>
-      '<div class="multi-existing-row"><strong>'+x.accountCode+'</strong><span>'+x.type+' • '+Number(x.hours).toFixed(1)+' h</span><small>'+x.details+'</small></div>'
+      '<div class="multi-existing-entry">'+
+        '<div><strong>'+x.accountCode+'</strong><span>'+x.type+' • '+Number(x.hours).toFixed(1)+' h</span></div>'+
+        '<p>'+x.details+'</p>'+
+      '</div>'
     ).join("");
 
     const queued=(r?.queuedEntries||[]).map(x=>
-      '<div class="multi-existing-row queued"><strong>'+x.accountCode+'</strong><span>'+x.type+' • '+Number(x.hours).toFixed(1)+' h • QUEUED</span><small>'+x.details+'</small></div>'
+      '<div class="multi-existing-entry queued">'+
+        '<div><strong>'+x.accountCode+'</strong><span>'+x.type+' • '+Number(x.hours).toFixed(1)+' h • QUEUED</span></div>'+
+        '<p>'+x.details+'</p>'+
+      '</div>'
     ).join("");
 
-    const details=(submitted||queued)
-      ? '<div class="multi-existing">'+submitted+queued+'</div>'
-      : '<div class="multi-existing empty">No existing entries shown for this date.</div>';
+    const entries=(submitted||queued)
+      ? '<div class="multi-existing-list">'+submitted+queued+'</div>'
+      : '<div class="multi-existing-empty">No recorded entry details for this date.</div>';
 
     return '<label class="multi-date-option '+(r?.complete?"complete":"")+'">'+
-      '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+'>'+
-      '<span class="multi-date-copy"><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small>'+details+'</span>'+
+      '<div class="multi-date-select-row">'+
+        '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+'>'+
+        '<span><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small></span>'+
+      '</div>'+
+      entries+
     '</label>';
   }).join("");
 }
