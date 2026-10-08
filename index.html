@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=51">
+<link rel="stylesheet" href="styles.css?v=52">
 </head>
 <body>
 <header>
@@ -26,7 +26,7 @@
       <div class="app-mark large">TE</div>
       <small>MCPME • TIMEENTRY</small>
       <h1>Fast Time Entry</h1>
-      <div class="version-badge">Prototype v51</div>
+      <div class="version-badge">Prototype v52</div>
       <h2>Customer. Time. Details. Done.</h2>
       <p>Capture CRM-ready time entries quickly from your phone, then transfer the queue to your laptop.</p>
       <div id="splashQuarterSummary" class="splash-quarter-summary" aria-label="Quarter hour summary"></div>
@@ -232,6 +232,24 @@
     </section>
   </section>
 
+  <div id="vacationModal" class="vacation-modal hidden" role="dialog" aria-modal="true" aria-labelledby="vacationModalTitle">
+    <div class="vacation-modal-card">
+      <div class="section-head">
+        <div>
+          <small>VACATION DAYS</small>
+          <h2 id="vacationModalTitle">Select vacation days</h2>
+        </div>
+        <button id="vacationModalClose" type="button" class="ghost">Close</button>
+      </div>
+      <p class="vacation-modal-note">Vacation days are excluded from expected hours. Saved on this browser/device.</p>
+      <div id="vacationCalendar" class="vacation-calendar"></div>
+      <div class="vacation-modal-actions">
+        <button id="vacationClearMonthBtn" type="button" class="ghost">Clear month</button>
+        <button id="vacationSaveBtn" type="button" class="primary">Save vacation days</button>
+      </div>
+    </div>
+  </div>
+
   <section id="history" class="card hidden">
     <div class="section-head">
       <div><h2>Saved time entries</h2><small>CRM-ready queue</small></div>
@@ -254,6 +272,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=51"></script>
+<script src="app.js?v=52"></script>
 </body>
 </html>
