@@ -423,7 +423,10 @@ function renderSplashQuarters(){
     const s=quarterSummary(q.key);
     const active=q.key===current;
     const hasRows=rowsForQuarter(q.key).length>0;
+    const completionBase=hasRows?s.expected:s.fullExpected;
+    const completionPct=completionBase>0?Math.min(100,Math.round((s.logged/completionBase)*100)):0;
     return '<button type="button" class="quarter-card '+(active?'active':'')+'" data-quarter="'+q.key+'">'+
+      '<span class="quarter-completion '+(completionPct>=100?'complete':(completionPct>0?'progress':'empty'))+'" aria-label="'+completionPct+' percent complete">'+completionPct+'%</span>'+
       '<span class="quarter-name">'+q.label+'</span>'+
       '<span class="quarter-range">'+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+' – '+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,"")+'</span>'+
       (hasRows
