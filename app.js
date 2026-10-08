@@ -331,7 +331,7 @@ function monthHistorySummary(){
   ];
   return defs.map(m=>{
     const monthRows=rows.filter(r=>r.date>=m.start&&r.date<=m.end);
-    const expected=monthRows.length*7;
+    const expected=monthRows.filter(r=>!r.vacation).length*7;
     const logged=monthRows.reduce((n,r)=>n+r.submitted,0);
     const queued=monthRows.reduce((n,r)=>n+r.queued,0);
     return {...m,expected,logged,queued,gap:Math.max(0,expected-(logged+queued))};
@@ -541,6 +541,20 @@ async function copyJson(){
  try{await navigator.clipboard.writeText(text);alert("JSON queue copied.")}catch(_){prompt("Copy JSON queue:",text)}
 }
 
+function vacationDates(){
+  try{return new Set(JSON.parse(localStorage.getItem("timeentry-vacation-dates")||"[]"))}
+  catch(_){return new Set()}
+}
+function saveVacationDates(set){
+  localStorage.setItem("timeentry-vacation-dates",JSON.stringify([...set].sort()));
+}
+function isVacationDate(date){return vacationDates().has(date)}
+function toggleVacationDate(date){
+  const set=vacationDates();
+  if(set.has(date))set.delete(date);else set.add(date);
+  saveVacationDates(set);
+  renderHistorical();
+}
 function timeStatusKind(effective){
   const h=Number(effective)||0;
   return h<=0 ? "empty" : (h>=7 ? "complete" : "partial");
@@ -582,13 +596,14 @@ function historicalRows(){
       const submitted=Number(base.hours)||0;
       const queuedHours=Number(q.hours)||0;
       const effective=submitted+queuedHours;
-      const remaining=Math.max(0,7-effective);
+      const vacation=isVacationDate(date);
+      const remaining=vacation?0:Math.max(0,7-effective);
       const breakdown={...base.breakdown};
       for(const [code,hours] of Object.entries(q.breakdown||{})){
         breakdown[code]=(breakdown[code]||0)+hours;
       }
       out.push({
-        date,submitted,queued:queuedHours,effective,remaining,breakdown,complete:effective>=7,
+        date,submitted,queued:queuedHours,effective,remaining,breakdown,vacation,complete:vacation||effective>=7,
         submittedEntries:[...(historicalDetails[date]||[]),...recurringDetailsFor(date)],
         queuedEntries:q.entries||[]
       });
@@ -605,10 +620,11 @@ function renderHistorical(){
     if(historicalFilter==="missing")return !r.complete;
     if(historicalFilter==="complete")return r.complete;
     if(historicalFilter==="duplicates")return !!duplicateReview[r.date];
+    if(historicalFilter==="vacation")return r.vacation;
     return true;
   });
   const missingHours=rows.reduce((sum,r)=>sum+r.remaining,0);
-  const incomplete=rows.filter(r=>!r.complete).length;
+  const incomplete=rows.filter(r=>!r.vacation&&!r.complete).length;
   const queuedHours=rows.reduce((sum,r)=>sum+r.queued,0);
   $("#historicalMissingHours").textContent=missingHours.toFixed(1);
   $("#historicalIncompleteDays").textContent=String(incomplete);
@@ -656,11 +672,13 @@ function renderHistorical(){
     const chips=Object.entries(r.breakdown)
       .filter(([,h])=>Number(h)>0)
       .map(([code,h])=>'<span class="history-chip">'+code+' '+Number(h).toFixed(1)+'</span>').join("");
-    const dayStatusKind=timeStatusKind(r.effective);
-    const dayStatusIcon='<span class="time-status-icon '+dayStatusKind+'" aria-hidden="true">'+timeStatusIcon(dayStatusKind)+'</span>';
-    const status=r.complete
-      ? '<span class="history-status complete">'+dayStatusIcon+'<span>'+r.effective.toFixed(1)+' h'+(r.effective>7?' • +'+(r.effective-7).toFixed(1)+' over':'')+'</span></span>'
-      : '<span class="history-status '+dayStatusKind+'">'+dayStatusIcon+'<span>'+r.remaining.toFixed(1)+' h missing</span></span>';
+    const dayStatusKind=r.vacation?"vacation":timeStatusKind(r.effective);
+    const dayStatusIcon='<span class="time-status-icon '+dayStatusKind+'" aria-hidden="true">'+(r.vacation?"V":timeStatusIcon(dayStatusKind))+'</span>';
+    const status=r.vacation
+      ? '<span class="history-status vacation">'+dayStatusIcon+'<span>Vacation • excluded</span></span>'
+      : (r.complete
+        ? '<span class="history-status complete">'+dayStatusIcon+'<span>'+r.effective.toFixed(1)+' h'+(r.effective>7?' • +'+(r.effective-7).toFixed(1)+' over':'')+'</span></span>'
+        : '<span class="history-status '+dayStatusKind+'">'+dayStatusIcon+'<span>'+r.remaining.toFixed(1)+' h missing</span></span>');
     const queued=r.queued>0?'<small class="queued-note">'+r.queued.toFixed(1)+' h queued in Fast Entry</small>':"";
     const expanded=expandedHistoricalDays.has(r.date) || true;
 
@@ -697,14 +715,17 @@ function renderHistorical(){
       ? (submittedLines+uncapturedLines+queuedLines+duplicateNote)
       : ('<p class="history-no-details">No submitted details for this date.</p>'+duplicateNote);
 
-    return '<article class="history-day '+(r.complete?"is-complete":"is-missing")+'">'+
+    return '<article class="history-day '+(r.vacation?"is-vacation":(r.complete?"is-complete":"is-missing"))+'">'+
       '<div class="history-day-top"><div class="history-date-with-icon">'+dayStatusIcon+'<div><strong>'+formatHistoryDate(r.date)+'</strong><small>'+r.submitted.toFixed(1)+' submitted • '+r.effective.toFixed(1)+' / 7.0 h including queue</small></div></div>'+status+'</div>'+
       '<div class="history-breakdown">'+(chips||'<span class="history-chip empty">No submitted time</span>')+'</div>'+
       queued+
       '<div class="history-details always-visible">'+detailsContent+'</div>'+
-      (!r.complete
-        ? '<button type="button" class="primary history-add" data-history-date="'+r.date+'" data-history-remaining="'+r.remaining+'">Add Missing Time • '+r.remaining.toFixed(1)+' h</button>'
-        : '<button type="button" class="ghost history-additional" data-history-date="'+r.date+'" data-history-effective="'+r.effective+'">Add Additional Time</button>')+
+      (r.vacation
+        ? '<button type="button" class="ghost history-vacation-toggle active" data-vacation-date="'+r.date+'">Remove Vacation Flag</button>'
+        : ((!r.complete
+            ? '<button type="button" class="primary history-add" data-history-date="'+r.date+'" data-history-remaining="'+r.remaining+'">Add Missing Time • '+r.remaining.toFixed(1)+' h</button>'
+            : '<button type="button" class="ghost history-additional" data-history-date="'+r.date+'" data-history-effective="'+r.effective+'">Add Additional Time</button>')+
+           '<button type="button" class="ghost history-vacation-toggle" data-vacation-date="'+r.date+'">Mark as Vacation</button>'))+
     '</article>';
   }).join(""):'<p class="empty-history">No days in this view.</p>';
 
@@ -717,6 +738,9 @@ function renderHistorical(){
     catchupContext={mode:"additional",date:b.dataset.historyDate,effective:Number(b.dataset.historyEffective)};
     showOnly("portfolioScreen");
     renderPortfolio();
+  });
+  $("#historicalList")?.querySelectorAll(".history-vacation-toggle").forEach(b=>b.onclick=()=>{
+    toggleVacationDate(b.dataset.vacationDate);
   });
   $("#historicalList")?.querySelectorAll("[data-edit-queued]").forEach(b=>b.onclick=()=>{
     catchupContext=null;
@@ -761,9 +785,9 @@ function renderMultiDates(selectedDates=[]){
 
   $("#multiDateGrid").innerHTML=dates.map(date=>{
     const r=rowsByDate[date];
-    const statusKind=timeStatusKind(r?.effective||0);
-    const statusIcon=timeStatusIcon(statusKind);
-    const statusText=timeStatusLabel(statusKind);
+    const statusKind=r?.vacation?"vacation":timeStatusKind(r?.effective||0);
+    const statusIcon=r?.vacation?"V":timeStatusIcon(statusKind);
+    const statusText=r?.vacation?"VACATION":timeStatusLabel(statusKind);
     const meta=r
       ? (r.complete
           ? r.effective.toFixed(1)+" h logged"+(r.effective>7?" • +"+(r.effective-7).toFixed(1)+" over":"")
@@ -790,7 +814,7 @@ function renderMultiDates(selectedDates=[]){
 
     return '<label class="multi-date-option '+statusKind+'">'+
       '<div class="multi-date-select-row">'+
-        '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+'>'+
+        '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+' '+(r?.vacation?"disabled":"")+'>'+
         '<span class="multi-date-status '+statusKind+'" aria-hidden="true">'+statusIcon+'</span>'+
         '<span class="multi-date-title"><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small></span>'+
         '<span class="multi-date-status-label '+statusKind+'">'+statusText+'</span>'+
@@ -839,7 +863,7 @@ function saveMultipleEntries(){
   const type=$("#multiType").value;
   const hours=Number($("#multiHours").value);
   const details=$("#multiDetails").value.trim();
-  const dates=[...$("#multiDateGrid").querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+  const dates=[...$("#multiDateGrid").querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value).filter(d=>!isVacationDate(d));
 
   if(!accountCodes.length){$("#multiMessage").textContent="Choose at least one customer.";return}
   if(!type){$("#multiMessage").textContent="Choose a type.";return}
@@ -978,7 +1002,7 @@ $("#multipleEntriesBtn").onclick=()=>openMultipleEntries(false);
 $("#multiNavBtn").onclick=()=>openMultipleEntries(false);
 $("#historicalMultipleBtn").onclick=()=>openMultipleEntries(true);
 $("#multiBackBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
-$("#multiSelectWeekdaysBtn").onclick=()=>renderMultiDates(historicalRows().filter(r=>!r.complete).map(r=>r.date));
+$("#multiSelectWeekdaysBtn").onclick=()=>renderMultiDates(historicalRows().filter(r=>!r.vacation&&!r.complete).map(r=>r.date));
 $("#multiDateFilters").onclick=e=>{
   const b=e.target.closest("[data-multi-filter]");
   if(!b)return;
