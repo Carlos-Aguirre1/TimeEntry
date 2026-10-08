@@ -916,3 +916,47 @@ button:disabled{opacity:.55;cursor:default}
 @media(max-width:650px){
   .quarter-holiday-box{font-size:8.5px}
 }
+
+/* v56 visible quarter completion percentage */
+.quarter-card{
+  position:relative;
+  padding-right:72px;
+}
+.quarter-completion{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#fff;
+  border:5px solid #d9e1de;
+  color:#123b6b;
+  font-size:15px;
+  font-weight:1000;
+  line-height:1;
+  box-sizing:border-box;
+}
+.quarter-completion.progress{
+  border-color:#d8ad31;
+}
+.quarter-completion.complete{
+  border-color:#5ea97b;
+  background:#eef8f2;
+  color:#17653c;
+}
+.quarter-completion.empty{
+  border-color:#d9e1de;
+  color:#68726f;
+}
+@media(max-width:650px){
+  .quarter-card{padding-right:64px}
+  .quarter-completion{
+    width:48px;
+    height:48px;
+    border-width:4px;
+    font-size:13px;
+  }
+}
