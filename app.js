@@ -55,7 +55,7 @@ const historicalSubmitted={
   "2026-09-04":{hours:.5,breakdown:{PS:.5}},
   "2026-09-07":{hours:.5,breakdown:{PS:.5}},
   "2026-09-08":{hours:3.5,breakdown:{PS:3.5}},
-  "2026-09-09":{hours:3.5,breakdown:{BL:2,PS:1.5}},
+  "2026-09-09":{hours:2.5,breakdown:{BL:2,PS:.5}},
   "2026-09-10":{hours:.5,breakdown:{PS:.5}},
   "2026-09-11":{hours:.5,breakdown:{PS:.5}},
   "2026-09-14":{hours:2.5,breakdown:{CRC:2,PS:.5}},
@@ -69,17 +69,22 @@ const historicalSubmitted={
   "2026-09-24":{hours:7,breakdown:{PS:7}},
   "2026-09-25":{hours:7,breakdown:{PS:7}},
   "2026-09-28":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-29":{hours:2,breakdown:{PS:1,KI:1}},
+  "2026-09-29":{hours:1.5,breakdown:{PS:.5,KI:1}},
   "2026-09-30":{hours:.5,breakdown:{PS:.5}},
   "2026-10-01":{hours:7,breakdown:{PS:1.5,IS:5.5}},
   "2026-10-02":{hours:1.5,breakdown:{BL:1,PS:.5}},
   "2026-10-05":{hours:3,breakdown:{MAN:1,BHC:.5,CPF:1,PS:.5}},
   "2026-10-06":{hours:7,breakdown:{PS:5.5,RB:1.5}},
-  "2026-10-07":{hours:1,breakdown:{PS:1}},
-  "2026-10-08":{hours:1,breakdown:{PS:1}},
+  "2026-10-07":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-08":{hours:.5,breakdown:{PS:.5}},
   "2026-10-09":{hours:.5,breakdown:{PS:.5}},
   "2026-10-12":{hours:.5,breakdown:{PS:.5}},
-  "2026-10-13":{hours:.5,breakdown:{PS:.5}}
+  "2026-10-13":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-14":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-15":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-16":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-19":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-20":{hours:.5,breakdown:{PS:.5}}
 };
 
 const historicalDetails={
@@ -212,19 +217,22 @@ const latestRecurringMeetings={
   "2026-08-17":1,"2026-08-18":1,"2026-08-19":1,"2026-08-20":1,"2026-08-21":1,
   "2026-08-24":1,"2026-08-25":1,"2026-08-26":1,"2026-08-27":1,"2026-08-28":1,
   "2026-08-31":1,"2026-09-01":1,"2026-09-02":1,"2026-09-03":1,"2026-09-04":1,
-  "2026-09-07":1,"2026-09-08":1,"2026-09-09":2,"2026-09-10":1,"2026-09-11":1,
+  "2026-09-07":1,"2026-09-08":1,"2026-09-09":1,"2026-09-10":1,"2026-09-11":1,
   "2026-09-14":1,"2026-09-15":1,"2026-09-16":1,"2026-09-17":1,"2026-09-18":1,
-  "2026-09-28":1,"2026-09-29":1,"2026-09-30":1,"2026-10-07":1,"2026-10-08":1
+  "2026-09-28":1,"2026-09-29":1,"2026-09-30":1,
+  "2026-10-07":1,"2026-10-08":1,"2026-10-09":1,"2026-10-12":1,"2026-10-13":1,
+  "2026-10-14":1,"2026-10-15":1,"2026-10-16":1,"2026-10-19":1,"2026-10-20":1
 };
-const duplicateReview={
-  "2026-08-19":"Possible duplicate morning meeting: another 0.5 h PS meeting already existed.",
-  "2026-09-09":"Likely duplicate: two identical new 0.5 h PS morning meetings plus an older 0.5 h morning meeting are visible.",
-  "2026-09-29":"Possible duplicate morning meeting: two 0.5 h PS morning-meeting entries are visible.",
-  "2026-10-07":"Possible duplicate morning meeting: two 0.5 h PS entries are visible.",
-  "2026-10-08":"Possible duplicate morning meeting: two 0.5 h PS entries are visible."
-};
+const duplicateReview={};
 function recurringDetailsFor(date){
   const count=latestRecurringMeetings[date]||0;
+  const already=(historicalDetails[date]||[]).some(x=>
+    x.accountCode==="PS" &&
+    x.type==="Meeting" &&
+    Number(x.hours)===0.5 &&
+    /anu|morning meeting/i.test(String(x.details||""))
+  );
+  if(already)return [];
   return Array.from({length:count},()=>({
     accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"
   }));
@@ -267,6 +275,28 @@ function markTransferred(ids){
 renderHistory();
 }
 function todayISO(){const d=new Date(),off=d.getTimezoneOffset();return new Date(d.getTime()-off*60000).toISOString().slice(0,10)}
+function latestHistoricalDate(){
+  return Object.keys(historicalSubmitted).sort().pop()||todayISO();
+}
+function historyEndDate(){
+  return [todayISO(),latestHistoricalDate()].sort().pop();
+}
+function monthHistorySummary(){
+  const rows=historicalRows();
+  const defs=[
+    {key:"2026-08",label:"August",start:"2026-08-01",end:"2026-08-31"},
+    {key:"2026-09",label:"September",start:"2026-09-01",end:"2026-09-30"},
+    {key:"2026-10",label:"October",start:"2026-10-01",end:historyEndDate()}
+  ];
+  return defs.map(m=>{
+    const monthRows=rows.filter(r=>r.date>=m.start&&r.date<=m.end);
+    const expected=monthRows.length*7;
+    const logged=monthRows.reduce((n,r)=>n+r.submitted,0);
+    const queued=monthRows.reduce((n,r)=>n+r.queued,0);
+    return {...m,expected,logged,queued,gap:Math.max(0,expected-(logged+queued))};
+  });
+}
+
 function showOnly(id){["splashScreen","portfolioScreen","entryScreen","multiEntryScreen","historicalScreen"].forEach(x=>$("#"+x)?.classList.add("hidden"));$("#"+id)?.classList.remove("hidden");window.scrollTo({top:0,behavior:"smooth"})}
 
 function customerBadge(c){return '<span class="player-photo customer-avatar"><strong>'+c.short+'</strong></span>'}
@@ -488,7 +518,7 @@ function historicalRows(){
   const queued=queuedByDate();
   const out=[];
   const [sy,sm,sd]=HISTORY_START.split("-").map(Number);
-  const [ey,em,ed]=todayISO().split("-").map(Number);
+  const [ey,em,ed]=historyEndDate().split("-").map(Number);
   const cur=new Date(sy,sm-1,sd),last=new Date(ey,em-1,ed);
 
   while(cur<=last){
@@ -531,6 +561,26 @@ function renderHistorical(){
   $("#historicalMissingHours").textContent=missingHours.toFixed(1);
   $("#historicalIncompleteDays").textContent=String(incomplete);
   $("#historicalQueuedHours").textContent=queuedHours.toFixed(1);
+  const monthSummary=monthHistorySummary();
+  const monthBox=$("#historicalMonthSummary");
+  if(monthBox){
+    const totalExpected=monthSummary.reduce((n,m)=>n+m.expected,0);
+    const totalLogged=monthSummary.reduce((n,m)=>n+m.logged,0);
+    const totalQueued=monthSummary.reduce((n,m)=>n+m.queued,0);
+    monthBox.innerHTML=
+      '<div class="month-summary-total"><strong>'+totalLogged.toFixed(1)+' / '+totalExpected.toFixed(1)+' h</strong><span>logged / expected • Aug–Oct through '+formatHistoryDate(historyEndDate())+'</span></div>'+
+      monthSummary.map(m=>
+        '<div class="month-summary-row">'+
+          '<div><strong>'+m.label+'</strong><small>'+(m.key==="2026-10"?'through '+formatHistoryDate(m.end):'full month')+'</small></div>'+
+          '<div class="month-summary-metrics">'+
+            '<span><b>'+m.logged.toFixed(1)+'</b> logged</span>'+
+            '<span><b>'+m.expected.toFixed(1)+'</b> expected</span>'+
+            (m.queued?'<span><b>'+m.queued.toFixed(1)+'</b> queued</span>':'')+
+            '<span class="'+(m.gap>0?'month-gap':'month-good')+'"><b>'+m.gap.toFixed(1)+'</b> gap</span>'+
+          '</div>'+
+        '</div>'
+      ).join("");
+  }
   $("#historicalFilters")?.querySelectorAll("[data-history-filter]").forEach(b=>b.classList.toggle("active",b.dataset.historyFilter===historicalFilter));
 
   $("#historicalList").innerHTML=visibleRows.length?visibleRows.map(r=>{
@@ -600,7 +650,7 @@ function openHistorical(){
 
 function batchDateRange(){
   const start=HISTORY_START;
-  const end=todayISO();
+  const end=historyEndDate();
   const [sy,sm,sd]=start.split("-").map(Number);
   const [ey,em,ed]=end.split("-").map(Number);
   const cur=new Date(sy,sm-1,sd),last=new Date(ey,em-1,ed),out=[];
