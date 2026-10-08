@@ -97,8 +97,33 @@ async function setAccount(accountName){
       clickTarget.dispatchEvent(new MouseEvent("mousedown",{bubbles:true,composed:true}));
       clickTarget.dispatchEvent(new MouseEvent("mouseup",{bubbles:true,composed:true}));
       clickTarget.click();
-      await sleep(700);
-      if(accepted())return;
+
+      // Salesforce often re-renders the Account lookup immediately after a
+      // suggestion is chosen. The original container can become stale, so
+      // don't rely only on accepted(). Re-acquire the field and accept any
+      // state where the lookup text is no longer an active search term.
+      for(let chosenWait=0;chosenWait<12;chosenWait++){
+        await sleep(180);
+        if(accepted())return;
+
+        const fresh=fieldByLabel("Account");
+        const advancedOpen=[...document.querySelectorAll('[role="dialog"],.slds-modal,.modal-container')]
+          .filter(visible)
+          .some(d=>norm(d.innerText||d.textContent).includes("advanced search"));
+
+        if(!advancedOpen){
+          const root=activeFormRoot();
+          const rootText=norm(root.innerText||root.textContent);
+          const pill=[...root.querySelectorAll('.slds-pill,button[title*="Remove"],button[aria-label*="Remove"]')]
+            .find(visible);
+          const freshValue=norm(fresh?.value||"");
+
+          if((pill&&rootText.includes(norm(accountName))) ||
+             (fresh && freshValue===norm(accountName) && fresh.getAttribute("aria-expanded")!=="true")){
+            return;
+          }
+        }
+      }
     }
   }
 
@@ -187,7 +212,7 @@ async function setAccount(accountName){
     }
   }
 
-  throw new Error('Salesforce found "'+accountName+'" but the extension could not select the Advanced Search row.');
+  throw new Error('Salesforce found "'+accountName+'" but the Account lookup did not commit. Try the current entry again; the extension will re-acquire the live lookup before continuing.');
 }
 async function fillEntry(entry,mapping){
   const accountName=mapping[entry.accountCode];
