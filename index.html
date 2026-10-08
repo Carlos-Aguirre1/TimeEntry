@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=48">
+<link rel="stylesheet" href="styles.css?v=49">
 </head>
 <body>
 <header>
@@ -25,9 +25,10 @@
       <div class="app-mark large">TE</div>
       <small>MCPME • TIMEENTRY</small>
       <h1>Fast Time Entry</h1>
-      <div class="version-badge">Prototype v48</div>
+      <div class="version-badge">Prototype v49</div>
       <h2>Customer. Time. Details. Done.</h2>
       <p>Capture CRM-ready time entries quickly from your phone, then transfer the queue to your laptop.</p>
+      <div id="splashQuarterSummary" class="splash-quarter-summary" aria-label="Quarter hour summary"></div>
       <div class="splash-benefits">
         <div><b>⚡</b><strong>Fast capture</strong><span>Customer first, then time</span></div>
         <div><b>▥</b><strong>CRM ready</strong><span>Only the fields you actually use</span></div>
@@ -166,7 +167,7 @@
     <section class="card historical-summary">
       <div class="section-head">
         <div>
-          <small>7 HOURS • MON–FRI</small>
+          <small id="historicalPeriodLabel">7 HOURS • MON–FRI</small>
           <h2>Historical Time</h2>
         </div>
         <div class="historical-head-actions">
@@ -223,6 +224,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=48"></script>
+<script src="app.js?v=49"></script>
 </body>
 </html>
