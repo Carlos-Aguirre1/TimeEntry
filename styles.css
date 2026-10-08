@@ -632,3 +632,42 @@ button:disabled{opacity:.55;cursor:default}
     font-size:17px!important;
   }
 }
+
+/* v48 vacation days */
+.time-status-icon.vacation,.multi-date-status.vacation{
+  background:#e7f1ff;
+  border:2px solid #6e9bd0;
+  color:#174b82;
+}
+.history-status.vacation{
+  background:#e7f1ff;
+  color:#174b82;
+}
+.history-day.is-vacation{
+  background:linear-gradient(180deg,#f8fbff 0%,#eef6ff 100%);
+}
+.history-vacation-toggle{
+  width:100%;
+  margin-top:8px;
+  border-color:#6e9bd0!important;
+  color:#174b82!important;
+}
+.history-vacation-toggle.active{
+  background:#e7f1ff!important;
+}
+.multi-date-option.vacation{
+  background:#f3f8ff;
+  border-color:#9dbbe0;
+}
+.multi-date-status-label.vacation{
+  background:#e7f1ff;
+  color:#174b82;
+  border:1px solid #6e9bd0;
+}
+.multi-date-option.vacation input[type="checkbox"]{
+  cursor:not-allowed;
+  opacity:.45;
+}
+.historical-filters button[data-history-filter="vacation"]{
+  flex:1 1 100%;
+}
