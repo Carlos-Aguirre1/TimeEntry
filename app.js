@@ -171,6 +171,31 @@ const historicalDetails={
     {accountCode:"KI",type:"Cadence Call",hours:2,details:"KIOSK / Blue Yonder working session covering separate SOTI environment, tenant visibility and monitoring."},
     {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
   ],
+  "2026-09-01":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
+    {accountCode:"PS",type:"Meeting",hours:1,details:"Team Anu morning meetings"},
+    {accountCode:"HC",type:"Other",hours:2.5,details:"Customer reporting issue on Honeywell CK65 devices."},
+    {accountCode:"BL",type:"Initiative",hours:.5,details:"Following up with Vahn regarding a customer issue."},
+    {accountCode:"KI",type:"Initiative",hours:1.5,details:"Clarified customer migration quote/request context."}
+  ],
+  "2026-09-02":[
+    {accountCode:"PS",type:"Meeting",hours:1,details:"XSight maturity model team meeting to discuss progress"},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
+    {accountCode:"KI",type:"Meeting",hours:1.5,details:"Received signed quote from Raja. Reached out to the AM to answer a security and compliance question."},
+    {accountCode:"IS",type:"Initiative",hours:1.5,details:"Actively worked with the IS team on environment readiness and customer planning before the onsite visit."}
+  ],
+  "2026-09-08":[
+    {accountCode:"PS",type:"Xsight",hours:3,details:"Continued working on XSight adoption web engine."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
+  ],
+  "2026-09-09":[
+    {accountCode:"BL",type:"Initiative",hours:2,details:"Setting up a working session with the BlueLinx team to discuss best practices."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Morning team meeting"}
+  ],
+  "2026-09-14":[
+    {accountCode:"CRC",type:"Other",hours:2,details:"Account review with Jay Rami and Tom to discuss CR California status and renewal areas."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
+  ],
   "2026-09-21":[
     {accountCode:"OT",type:"Other",hours:7,details:"Travelling to onsite QBR"}
   ],
@@ -632,6 +657,17 @@ function renderHistorical(){
         '<p>'+x.details+'</p>'+
       '</div>'
     ).join("");
+    const represented={};
+    r.submittedEntries.forEach(x=>represented[x.accountCode]=(represented[x.accountCode]||0)+(Number(x.hours)||0));
+    const uncapturedLines=Object.entries(r.breakdown)
+      .filter(([code,hours])=>(Number(hours)||0)>(represented[code]||0)+0.001)
+      .map(([code,hours])=>{
+        const missing=(Number(hours)||0)-(represented[code]||0);
+        return '<div class="history-detail-row history-detail-uncaptured">'+
+          '<div class="history-detail-main"><strong>'+code+'</strong><span>'+missing.toFixed(1)+' h</span></div>'+
+          '<p>Details not yet captured from the Salesforce snapshot.</p>'+
+        '</div>';
+      }).join("");
 
     const queuedLines=r.queuedEntries.map(x=>
       '<div class="history-detail-row queued-detail">'+
@@ -644,8 +680,8 @@ function renderHistorical(){
     const duplicateNote=duplicateReview[r.date]
       ? '<div class="history-duplicate-warning">⚠ Duplicate review: '+duplicateReview[r.date]+'</div>'
       : "";
-    const detailsContent=(submittedLines||queuedLines)
-      ? (submittedLines+queuedLines+duplicateNote)
+    const detailsContent=(submittedLines||uncapturedLines||queuedLines)
+      ? (submittedLines+uncapturedLines+queuedLines+duplicateNote)
       : ('<p class="history-no-details">No submitted details for this date.</p>'+duplicateNote);
 
     return '<article class="history-day '+(r.complete?"is-complete":"is-missing")+'">'+
