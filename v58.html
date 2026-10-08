@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TimeEntry • Fast Time Entry</title>
+<link rel="stylesheet" href="styles-v58.css">
+</head>
+<body>
+<header>
+  <button id="brandHomeBtn" class="brand brand-home" type="button" aria-label="Go to quarterly dashboard">
+    <div class="app-mark">TE</div>
+    <div><small>MCPME • TIMEENTRY</small><h1>Fast Time Entry</h1></div>
+  </button>
+  <div class="top-nav">
+    <button id="quarterlyNavBtn" class="ghost">Quarterly</button>
+    <button id="fastEntryNavBtn" class="ghost">Fast Entry</button>
+    <button id="multiNavBtn" class="ghost">Multiple</button>
+    <button id="historicalNavBtn" class="ghost">Historical</button>
+    <button id="historyBtn" class="ghost">Saved <span id="savedCount">0</span></button>
+  </div>
+</header>
+<main>
+  <section id="splashScreen" class="splash-screen">
+    <div class="splash-hero dashboard-first">
+      <div class="splash-compact-head">
+        <div>
+          <small>MCPME • TIMEENTRY</small>
+          <h1>Fast Time Entry</h1>
+        </div>
+        <div class="version-badge">Prototype v58</div>
+      </div>
+      <p class="splash-dashboard-copy">Quarter dashboard • 7 hours per workday • holidays and vacation excluded.</p>
+      <div id="splashQuarterSummary" class="splash-quarter-summary" aria-label="Quarter hour summary"></div>
+      <div class="splash-benefits">
+        <div><b>⚡</b><strong>Fast capture</strong><span>Customer first, then time</span></div>
+        <div><b>▥</b><strong>CRM ready</strong><span>Only the fields you actually use</span></div>
+        <div><b>↗</b><strong>Send to laptop</strong><span>Build a clean JSON queue</span></div>
+      </div>
+      <button id="enterAppBtn" class="splash-enter" type="button">Start time entry <span>→</span></button>
+    </div>
+  </section>
+
+  <section id="portfolioScreen" class="card roster-card hidden">
+    <div class="roster-head">
+      <div>
+        <h2>Select customer</h2>
+        <p id="portfolioProgress">Choose the account you worked on</p>
+      </div>
+    </div>
+    <div class="bulk-toolbar">
+      <div class="compact-control-row">
+        <button id="multipleEntriesBtn" type="button" class="ghost multi-entry-launch">Multiple Entries</button>
+        <div id="layoutToggle" class="layout-toggle" role="group" aria-label="Customer layout">
+          <button type="button" data-layout="grid" class="active">Grid</button>
+          <button type="button" data-layout="wheel">Wheel</button>
+        </div>
+      </div>
+    </div>
+    <div id="customerGrid" class="player-grid"></div>
+  </section>
+
+  <section id="entryScreen" class="hidden">
+    <section class="card active-player">
+      <button id="backBtn" class="back-btn" type="button">‹ Customers</button>
+      <div><strong id="activeCustomerName"></strong><small id="activeCustomerDetail"></small></div>
+    </section>
+
+    <section class="card section-card">
+      <div class="section-title static-title"><span>TIME ENTRY</span></div>
+      <div class="field-group"><label>Date</label><input id="entryDate" type="date"></div>
+      <div class="field-group"><label>Type</label><select id="entryType"></select></div>
+      <div class="field-group">
+        <label>Number of Hours</label>
+        <div id="hoursGrid" class="hours-grid"></div>
+        <div class="hour-adjust">
+          <button id="hoursMinus" type="button">−</button>
+          <strong id="hoursValue">1.0 h</strong>
+          <button id="hoursPlus" type="button">+</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Details</label>
+        <textarea id="entryDetails" placeholder="Quick description of what you worked on…"></textarea>
+      </div>
+    </section>
+
+    <section class="card actions">
+      <button id="saveBtn" type="button" class="primary">Save Time Entry</button>
+      <button id="saveNextBtn" type="button" class="ghost">Save & choose next customer</button>
+      <p id="message" aria-live="polite"></p>
+    </section>
+  </section>
+
+  <section id="multiEntryScreen" class="hidden">
+    <section class="card section-card">
+      <div class="section-head">
+        <div>
+          <small>BATCH ENTRY</small>
+          <h2>Multiple Entries</h2>
+        </div>
+        <button id="multiBackBtn" class="ghost">Back</button>
+      </div>
+      <p class="multi-intro">Enter the time once, then choose every date that should receive the same entry.</p>
+
+      <div class="field-group">
+        <div class="multi-customer-head">
+          <label>Customer</label>
+          <label class="multi-customer-toggle">
+            <input id="multiCustomerMode" type="checkbox">
+            <span>Apply to multiple customers</span>
+          </label>
+        </div>
+        <select id="multiCustomer"></select>
+        <div id="multiCustomerGrid" class="multi-customer-grid hidden"></div>
+      </div>
+
+      <div class="field-group">
+        <label>Type</label>
+        <select id="multiType"></select>
+      </div>
+
+      <div class="field-group">
+        <label>Number of Hours per day</label>
+        <select id="multiHours">
+          <option value="0.5">0.5 h</option>
+          <option value="1">1.0 h</option>
+          <option value="1.5">1.5 h</option>
+          <option value="2">2.0 h</option>
+          <option value="2.5">2.5 h</option>
+          <option value="3">3.0 h</option>
+          <option value="3.5">3.5 h</option>
+          <option value="4">4.0 h</option>
+          <option value="4.5">4.5 h</option>
+          <option value="5">5.0 h</option>
+          <option value="5.5">5.5 h</option>
+          <option value="6">6.0 h</option>
+          <option value="6.5">6.5 h</option>
+          <option value="7">7.0 h</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Details</label>
+        <textarea id="multiDetails" placeholder="Example: Team Anu morning meeting"></textarea>
+      </div>
+
+      <div class="field-group">
+        <div class="multi-date-head">
+          <label>Select dates</label>
+          <button id="multiSelectWeekdaysBtn" type="button" class="ghost">Select incomplete days</button>
+        </div>
+        <div id="multiDateFilters" class="multi-date-filters" role="group" aria-label="Filter dates by time status">
+          <button type="button" data-multi-filter="all" class="active">All</button>
+          <button type="button" data-multi-filter="empty">🔴 No time</button>
+          <button type="button" data-multi-filter="partial">🟡 Partial</button>
+          <button type="button" data-multi-filter="complete">✅ 7+ hours</button>
+        </div>
+        <div id="multiDateGrid" class="multi-date-grid"></div>
+      </div>
+    </section>
+
+    <section class="card actions">
+      <button id="multiSaveBtn" type="button" class="primary">Save Multiple Entries</button>
+      <p id="multiMessage" aria-live="polite"></p>
+    </section>
+  </section>
+
+  <section id="historicalScreen" class="hidden">
+    <section class="card historical-summary">
+      <div class="section-head">
+        <div>
+          <small id="historicalPeriodLabel">7 HOURS • MON–FRI</small>
+          <h2>Historical Time</h2>
+        </div>
+        <div class="historical-head-actions">
+          <button id="historicalCustomerBtn" class="ghost">By Customer</button>
+          <button id="historicalMultipleBtn" class="ghost">Multiple Entries</button>
+          <button id="historicalBackBtn" class="ghost">Fast Entry</button>
+        </div>
+      </div>
+      <div class="history-kpis">
+        <div><strong id="historicalMissingHours">0.0</strong><span>hours missing</span></div>
+        <div><strong id="historicalIncompleteDays">0</strong><span>incomplete days</span></div>
+        <div><strong id="historicalQueuedHours">0.0</strong><span>hours queued</span></div>
+      </div>
+      <div id="historicalMonthSummary" class="historical-month-summary"></div>
+      <div id="historicalMonthNav" class="historical-month-nav hidden">
+        <button id="historyPrevMonthBtn" type="button" class="ghost">← Previous</button>
+        <strong id="historyMonthNavLabel"></strong>
+        <button id="historyNextMonthBtn" type="button" class="ghost">Next →</button>
+        <button id="historyAllMonthsBtn" type="button" class="ghost">Display all</button>
+      </div>
+      <div class="historical-filters" id="historicalFilters">
+        <button type="button" data-history-filter="missing">🟡 Missing / partial</button>
+        <button type="button" data-history-filter="complete">✅ 7+ hours</button>
+        <button type="button" data-history-filter="all" class="active">All</button>
+        <button type="button" data-history-filter="duplicates">Potential duplicates</button>
+        <button type="button" data-history-filter="vacation">🏖 Vacation</button>
+        <button type="button" data-history-filter="holiday">H Ontario holidays</button>
+      </div>
+      <p class="historical-note">Customer names are never shown here. Historical activity uses account acronyms only.</p>
+    </section>
+
+    <section class="card historical-list-card">
+      <div id="historicalList"></div>
+    </section>
+  </section>
+
+  <section id="customerHoursScreen" class="hidden">
+    <section class="card customer-hours-summary">
+      <div class="section-head">
+        <div>
+          <small>FOCUS VIEW</small>
+          <h2>Hours by Customer</h2>
+        </div>
+        <button id="customerHoursBackBtn" class="ghost">Historical</button>
+      </div>
+      <div class="field-group customer-period-control">
+        <label for="customerHoursPeriod">Timeframe</label>
+        <select id="customerHoursPeriod"></select>
+      </div>
+      <div id="customerHoursTotal" class="customer-hours-total"></div>
+      <div id="customerHoursGrid" class="customer-hours-grid"></div>
+    </section>
+    <section id="customerHoursDetailCard" class="card customer-hours-detail-card hidden">
+      <div class="section-head">
+        <div>
+          <small id="customerHoursDetailPeriod"></small>
+          <h2 id="customerHoursDetailTitle"></h2>
+        </div>
+        <button id="customerHoursDetailClose" class="ghost">All Customers</button>
+      </div>
+      <div id="customerHoursDetail"></div>
+    </section>
+  </section>
+
+  <div id="vacationModal" class="vacation-modal hidden" role="dialog" aria-modal="true" aria-labelledby="vacationModalTitle">
+    <div class="vacation-modal-card">
+      <div class="section-head">
+        <div>
+          <small>VACATION DAYS</small>
+          <h2 id="vacationModalTitle">Select vacation days</h2>
+        </div>
+        <button id="vacationModalClose" type="button" class="ghost">Close</button>
+      </div>
+      <p class="vacation-modal-note">Vacation days are excluded from expected hours. Saved on this browser/device.</p>
+      <div id="vacationCalendar" class="vacation-calendar"></div>
+      <div class="vacation-modal-actions">
+        <button id="vacationClearMonthBtn" type="button" class="ghost">Clear month</button>
+        <button id="vacationSaveBtn" type="button" class="primary">Save vacation days</button>
+      </div>
+    </div>
+  </div>
+
+  <section id="history" class="card hidden">
+    <div class="section-head">
+      <div><h2>Saved time entries</h2><small>CRM-ready queue</small></div>
+      <button id="closeHistoryBtn" class="ghost">Close</button>
+    </div>
+    <div class="saved-kpis">
+      <div><strong id="savedTodayHours">0.0</strong><span>today</span></div>
+      <div><strong id="savedWeekHours">0.0</strong><span>this week</span></div>
+      <div><strong id="savedTotalHours">0.0</strong><span>saved total</span></div>
+    </div>
+    <div id="historyList"></div>
+    <div class="history-actions">
+      <button id="sendLaptopBtn" class="primary">Send New Entries to Laptop</button>
+      <button id="sendAllLaptopBtn" class="ghost">Send All Saved Entries</button>
+      <div id="transferLinkBox" class="transfer-link-box hidden"><div class="transfer-link-title">Laptop transfer link</div><a id="transferLink" href="#" target="_blank" rel="noopener">Open transfer link</a><button id="copyTransferLinkBtn" class="ghost" type="button">Copy transfer link</button></div>
+      <button id="copyJsonBtn" class="ghost">Copy JSON</button>
+      <button id="clearHistoryBtn" class="ghost danger">Clear queue</button>
+    </div>
+    <pre id="jsonPreview"></pre>
+  </section>
+</main>
+<div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
+<script src="app-v58.js"></script>
+</body>
+</html>
