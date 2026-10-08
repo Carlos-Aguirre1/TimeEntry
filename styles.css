@@ -423,3 +423,45 @@ button:disabled{opacity:.55;cursor:default}
   letter-spacing:.06em;
   text-transform:uppercase;
 }
+
+/* Historical monthly drill-down */
+.month-summary-select{
+  width:100%;
+  font:inherit;
+  color:inherit;
+  cursor:pointer;
+  text-align:left;
+}
+.month-summary-select.selected{
+  border-color:#123b6b;
+  box-shadow:inset 0 0 0 2px #123b6b;
+}
+.historical-month-nav{
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  gap:8px;
+  align-items:center;
+  margin:10px 0 14px;
+  padding:10px;
+  border:1px solid #dce4e1;
+  border-radius:14px;
+  background:#f7f9f8;
+}
+.historical-month-nav strong{
+  text-align:center;
+  color:#123b6b;
+  font-size:14px;
+}
+.historical-month-nav button:disabled{opacity:.38}
+@media(max-width:560px){
+  .historical-month-nav{
+    grid-template-columns:1fr 1fr;
+  }
+  .historical-month-nav strong{
+    grid-column:1/-1;
+    grid-row:1;
+  }
+  .historical-month-nav #historyAllMonthsBtn{
+    grid-column:1/-1;
+  }
+}
