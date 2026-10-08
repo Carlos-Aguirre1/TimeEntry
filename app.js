@@ -541,6 +541,16 @@ async function copyJson(){
  try{await navigator.clipboard.writeText(text);alert("JSON queue copied.")}catch(_){prompt("Copy JSON queue:",text)}
 }
 
+function timeStatusKind(effective){
+  const h=Number(effective)||0;
+  return h<=0 ? "empty" : (h>=7 ? "complete" : "partial");
+}
+function timeStatusIcon(kind){
+  return kind==="complete" ? "✓" : "!";
+}
+function timeStatusLabel(kind){
+  return kind==="complete" ? "7+ HOURS" : (kind==="empty" ? "NO TIME" : "PARTIAL");
+}
 function formatHistoryDate(iso){
   const [y,m,d]=iso.split("-").map(Number);
   return new Date(y,m-1,d).toLocaleDateString("en-CA",{weekday:"short",month:"short",day:"numeric"});
@@ -646,9 +656,11 @@ function renderHistorical(){
     const chips=Object.entries(r.breakdown)
       .filter(([,h])=>Number(h)>0)
       .map(([code,h])=>'<span class="history-chip">'+code+' '+Number(h).toFixed(1)+'</span>').join("");
+    const dayStatusKind=timeStatusKind(r.effective);
+    const dayStatusIcon='<span class="time-status-icon '+dayStatusKind+'" aria-hidden="true">'+timeStatusIcon(dayStatusKind)+'</span>';
     const status=r.complete
-      ? '<span class="history-status complete">'+r.effective.toFixed(1)+' h ✓'+(r.effective>7?' • +'+(r.effective-7).toFixed(1)+' over':'')+'</span>'
-      : '<span class="history-status missing">'+r.remaining.toFixed(1)+' h missing</span>';
+      ? '<span class="history-status complete">'+dayStatusIcon+'<span>'+r.effective.toFixed(1)+' h'+(r.effective>7?' • +'+(r.effective-7).toFixed(1)+' over':'')+'</span></span>'
+      : '<span class="history-status '+dayStatusKind+'">'+dayStatusIcon+'<span>'+r.remaining.toFixed(1)+' h missing</span></span>';
     const queued=r.queued>0?'<small class="queued-note">'+r.queued.toFixed(1)+' h queued in Fast Entry</small>':"";
     const expanded=expandedHistoricalDays.has(r.date) || true;
 
@@ -686,7 +698,7 @@ function renderHistorical(){
       : ('<p class="history-no-details">No submitted details for this date.</p>'+duplicateNote);
 
     return '<article class="history-day '+(r.complete?"is-complete":"is-missing")+'">'+
-      '<div class="history-day-top"><div><strong>'+formatHistoryDate(r.date)+'</strong><small>'+r.submitted.toFixed(1)+' submitted • '+r.effective.toFixed(1)+' / 7.0 h including queue</small></div>'+status+'</div>'+
+      '<div class="history-day-top"><div class="history-date-with-icon">'+dayStatusIcon+'<div><strong>'+formatHistoryDate(r.date)+'</strong><small>'+r.submitted.toFixed(1)+' submitted • '+r.effective.toFixed(1)+' / 7.0 h including queue</small></div></div>'+status+'</div>'+
       '<div class="history-breakdown">'+(chips||'<span class="history-chip empty">No submitted time</span>')+'</div>'+
       queued+
       '<div class="history-details always-visible">'+detailsContent+'</div>'+
@@ -749,9 +761,9 @@ function renderMultiDates(selectedDates=[]){
 
   $("#multiDateGrid").innerHTML=dates.map(date=>{
     const r=rowsByDate[date];
-    const statusKind=!r || r.effective===0 ? "empty" : (r.complete ? "complete" : "partial");
-    const statusIcon=statusKind==="complete" ? "✓" : (statusKind==="empty" ? "!" : "!");
-    const statusText=statusKind==="complete" ? "7+ HOURS" : (statusKind==="empty" ? "NO TIME" : "PARTIAL");
+    const statusKind=timeStatusKind(r?.effective||0);
+    const statusIcon=timeStatusIcon(statusKind);
+    const statusText=timeStatusLabel(statusKind);
     const meta=r
       ? (r.complete
           ? r.effective.toFixed(1)+" h logged"+(r.effective>7?" • +"+(r.effective-7).toFixed(1)+" over":"")
