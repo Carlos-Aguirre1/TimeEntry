@@ -34,19 +34,19 @@ const expandedHistoricalDays=new Set();
 
 const historicalSubmitted={
   "2026-08-10":{hours:9.5,breakdown:{KI:3,HC:1.5,CPF:1.5,RB:3,PS:.5}},
-  "2026-08-11":{hours:5.5,breakdown:{IS:2.5,HC:2.5,PS:.5}},
-  "2026-08-12":{hours:6,breakdown:{HC:2.5,OT:3,PS:.5}},
+  "2026-08-11":{hours:7,breakdown:{IS:2.5,HC:2.5,PS:2}},
+  "2026-08-12":{hours:7,breakdown:{HC:2.5,OT:3,PS:1.5}},
   "2026-08-13":{hours:7,breakdown:{PS:2,HC:1.5,BL:2,OT:1.5}},
   "2026-08-14":{hours:7.5,breakdown:{MAN:1,IS:2,TD:2,HC:2,PS:.5}},
   "2026-08-17":{hours:6.5,breakdown:{PS:3.5,IS:1.5,OT:1.5}},
-  "2026-08-18":{hours:5.5,breakdown:{PS:3,OT:2.5}},
+  "2026-08-18":{hours:7,breakdown:{PS:4.5,OT:2.5}},
   "2026-08-19":{hours:6.5,breakdown:{HC:3,WM:2.5,PS:1}},
-  "2026-08-20":{hours:3.5,breakdown:{PS:2,KI:1.5}},
-  "2026-08-21":{hours:6,breakdown:{CRC:1.5,IS:1.5,BL:2.5,PS:.5}},
-  "2026-08-24":{hours:7,breakdown:{KI:1.5,IS:1.5,BL:3.5,PS:.5}},
-  "2026-08-25":{hours:5,breakdown:{PS:3,CPF:2}},
-  "2026-08-26":{hours:5.5,breakdown:{IS:1,OT:1.5,PS:1.5,KI:1.5}},
-  "2026-08-27":{hours:.5,breakdown:{PS:.5}},
+  "2026-08-20":{hours:7,breakdown:{PS:5.5,KI:1.5}},
+  "2026-08-21":{hours:6.5,breakdown:{CRC:1.5,IS:1.5,BL:2.5,PS:1}},
+  "2026-08-24":{hours:7.5,breakdown:{KI:1.5,IS:1.5,BL:3.5,PS:1}},
+  "2026-08-25":{hours:5.5,breakdown:{PS:3.5,CPF:2}},
+  "2026-08-26":{hours:7,breakdown:{IS:1,OT:1.5,PS:3,KI:1.5}},
+  "2026-08-27":{hours:4,breakdown:{PS:.5,HC:1.5,KI:2}},
   "2026-08-28":{hours:.5,breakdown:{PS:.5}},
   "2026-08-31":{hours:.5,breakdown:{PS:.5}},
   "2026-09-01":{hours:.5,breakdown:{PS:.5}},
@@ -84,7 +84,8 @@ const historicalSubmitted={
   "2026-10-15":{hours:.5,breakdown:{PS:.5}},
   "2026-10-16":{hours:.5,breakdown:{PS:.5}},
   "2026-10-19":{hours:.5,breakdown:{PS:.5}},
-  "2026-10-20":{hours:.5,breakdown:{PS:.5}}
+  "2026-10-20":{hours:.5,breakdown:{PS:.5}},
+  "2026-10-21":{hours:.5,breakdown:{PS:.5}}
 };
 
 const historicalDetails={
@@ -96,12 +97,14 @@ const historicalDetails={
   ],
   "2026-08-11":[
     {accountCode:"IS",type:"Troubleshooting",hours:2.5,details:"Reviewing issue Jeff is running into with space and OS upgrade files."},
-    {accountCode:"HC",type:"Xsight",hours:2.5,details:"Meeting with Allen to discuss XSight initiatives and displaying value for his customer."}
+    {accountCode:"HC",type:"Xsight",hours:2.5,details:"Meeting with Allen to discuss XSight initiatives and displaying value for his customer."},
+    {accountCode:"PS",type:"Initiative",hours:1.5,details:"Working on XSight maturity model"}
   ],
   "2026-08-12":[
     {accountCode:"HC",type:"Troubleshooting",hours:1,details:"Submitting cloud ticket to swap regkeys on server and request server be deleted."},
     {accountCode:"OT",type:"Troubleshooting",hours:3,details:"Working with Shawn to troubleshoot Zebra software package deployment and OEM configuration."},
-    {accountCode:"HC",type:"Troubleshooting",hours:1.5,details:"Working with sales operations to correct the SIT for one of Allen's MobiControl instances."}
+    {accountCode:"HC",type:"Troubleshooting",hours:1.5,details:"Working with sales operations to correct the SIT for one of Allen's MobiControl instances."},
+    {accountCode:"PS",type:"Meeting",hours:1,details:"Working on XSight maturity model"}
   ],
   "2026-08-13":[
     {accountCode:"PS",type:"Xsight",hours:1.5,details:"Held meeting with local XSight team and reviewed project summary/prescriptive guidance."},
@@ -123,7 +126,8 @@ const historicalDetails={
   ],
   "2026-08-18":[
     {accountCode:"PS",type:"Xsight",hours:2.5,details:"Continued working on XSight Maturity model and journey-step questions."},
-    {accountCode:"OT",type:"Troubleshooting",hours:2.5,details:"Continued troubleshooting around the Aspira kiosk application."}
+    {accountCode:"OT",type:"Troubleshooting",hours:2.5,details:"Continued troubleshooting around the Aspira kiosk application."},
+    {accountCode:"PS",type:"Initiative",hours:1.5,details:"Continued with XSight maturity model"}
   ],
   "2026-08-19":[
     {accountCode:"HC",type:"Troubleshooting",hours:1.5,details:"Reviewed and tested JIRA IM-28365."},
@@ -133,28 +137,38 @@ const historicalDetails={
   ],
   "2026-08-20":[
     {accountCode:"PS",type:"Other",hours:1.5,details:"TAM Transition Planning - walking through accounts that will be transitioned."},
-    {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"Aspira / Lockdown Configuration troubleshooting with the KIOSK team."}
+    {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"Aspira / Lockdown Configuration troubleshooting with the KIOSK team."},
+    {accountCode:"PS",type:"Meeting",hours:3,details:"Continued working on XSight maturity model"}
   ],
   "2026-08-21":[
     {accountCode:"CRC",type:"Cadence Call",hours:1.5,details:"Organized and hosted the CR California strategic touchpoint monthly."},
     {accountCode:"IS",type:"Cadence Call",hours:1.5,details:"Hosted the IntegraServ weekly touch point."},
-    {accountCode:"BL",type:"Cadence Call",hours:2.5,details:"Monthly cadence meeting with BlueLinx."}
+    {accountCode:"BL",type:"Cadence Call",hours:2.5,details:"Monthly cadence meeting with BlueLinx."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
   ],
   "2026-08-24":[
     {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"KIOSK customer migration planning initiative."},
     {accountCode:"IS",type:"Troubleshooting",hours:1.5,details:"Storage expansion / cloud upgrade coordination."},
     {accountCode:"BL",type:"Troubleshooting",hours:1.5,details:"HighRadius Pay & Remit investigation."},
-    {accountCode:"BL",type:"Troubleshooting",hours:2,details:"Prepared for and attended two working sessions with customer."}
+    {accountCode:"BL",type:"Troubleshooting",hours:2,details:"Prepared for and attended two working sessions with customer."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
   ],
   "2026-08-25":[
     {accountCode:"PS",type:"Xsight",hours:2.5,details:"MCP / OAuth / QA environment testing."},
-    {accountCode:"CPF",type:"Troubleshooting",hours:2,details:"Customer escalation involving MobiControl application deployment failures."}
+    {accountCode:"CPF",type:"Troubleshooting",hours:2,details:"Customer escalation involving MobiControl application deployment failures."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
   ],
   "2026-08-26":[
     {accountCode:"IS",type:"Troubleshooting",hours:1,details:"Workwear Outfitters escalation through IntegraServ."},
     {accountCode:"OT",type:"Cadence Call",hours:1.5,details:"Prepared and hosted the OnTrac cadence meeting."},
     {accountCode:"PS",type:"Other",hours:1,details:"Account transition - reviewing KIOSK environment and customer requirements."},
-    {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"Deep-dive troubleshooting session involving Aspira kiosk application behaviour."}
+    {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"Deep-dive troubleshooting session involving Aspira kiosk application behaviour."},
+    {accountCode:"PS",type:"Initiative",hours:1.5,details:"XSight Maturity model - continued the development of the web application."}
+  ],
+  "2026-08-27":[
+    {accountCode:"HC",type:"Meeting",hours:1.5,details:"Working with Liz regarding Heartland portal asset records and MSP note updates."},
+    {accountCode:"KI",type:"Cadence Call",hours:2,details:"KIOSK / Blue Yonder working session covering separate SOTI environment, tenant visibility and monitoring."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
   ],
   "2026-09-21":[
     {accountCode:"OT",type:"Other",hours:7,details:"Travelling to onsite QBR"}
@@ -221,7 +235,7 @@ const latestRecurringMeetings={
   "2026-09-14":1,"2026-09-15":1,"2026-09-16":1,"2026-09-17":1,"2026-09-18":1,
   "2026-09-28":1,"2026-09-29":1,"2026-09-30":1,
   "2026-10-07":1,"2026-10-08":1,"2026-10-09":1,"2026-10-12":1,"2026-10-13":1,
-  "2026-10-14":1,"2026-10-15":1,"2026-10-16":1,"2026-10-19":1,"2026-10-20":1
+  "2026-10-14":1,"2026-10-15":1,"2026-10-16":1,"2026-10-19":1,"2026-10-20":1,"2026-10-21":1
 };
 const duplicateReview={};
 function recurringDetailsFor(date){
