@@ -1066,6 +1066,15 @@ function setupRadialWheel(){
 
 $("#entryType").innerHTML='<option value="">--None--</option>'+types.map(t=>'<option>'+t+'</option>').join("");
 renderSplashQuarters();
+function openQuarterlyDashboard(){
+  historicalQuarter=null;
+  historicalMonth=null;
+  historicalFilter="all";
+  renderSplashQuarters();
+  showOnly("splashScreen");
+}
+$("#quarterlyNavBtn").onclick=openQuarterlyDashboard;
+$("#brandHomeBtn").onclick=openQuarterlyDashboard;
 $("#enterAppBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multipleEntriesBtn").onclick=()=>openMultipleEntries(false);
 $("#multiNavBtn").onclick=()=>openMultipleEntries(false);
