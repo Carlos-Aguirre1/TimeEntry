@@ -29,6 +29,7 @@ let saveLocked=false;
 let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
 let historicalFilter="all";
 let historicalMonth=null;
+let multiDateFilter="all";
 let catchupContext=null;
 const HISTORY_START="2026-08-01";
 const expandedHistoricalDays=new Set();
@@ -734,18 +735,28 @@ function batchDateRange(){
   }
   return out;
 }
+function currentMultiSelectedDates(){
+  return [...($("#multiDateGrid")?.querySelectorAll('input[type="checkbox"]:checked')||[])].map(x=>x.value);
+}
 function renderMultiDates(selectedDates=[]){
   const selected=new Set(selectedDates);
   const rowsByDate=Object.fromEntries(historicalRows().map(r=>[r.date,r]));
-  $("#multiDateGrid").innerHTML=batchDateRange().map(date=>{
+  const dates=batchDateRange().filter(date=>{
+    const r=rowsByDate[date];
+    const statusKind=!r || r.effective===0 ? "empty" : (r.complete ? "complete" : "partial");
+    return multiDateFilter==="all" || statusKind===multiDateFilter;
+  });
+
+  $("#multiDateGrid").innerHTML=dates.map(date=>{
     const r=rowsByDate[date];
     const statusKind=!r || r.effective===0 ? "empty" : (r.complete ? "complete" : "partial");
     const statusIcon=statusKind==="complete" ? "✓" : (statusKind==="empty" ? "!" : "!");
+    const statusText=statusKind==="complete" ? "7+ HOURS" : (statusKind==="empty" ? "NO TIME" : "PARTIAL");
     const meta=r
       ? (r.complete
           ? r.effective.toFixed(1)+" h logged"+(r.effective>7?" • +"+(r.effective-7).toFixed(1)+" over":"")
           : r.remaining.toFixed(1)+" h missing")
-      : "No history";
+      : "7.0 h missing";
 
     const submitted=(r?.submittedEntries||[]).map(x=>
       '<div class="multi-existing-entry">'+
@@ -769,11 +780,16 @@ function renderMultiDates(selectedDates=[]){
       '<div class="multi-date-select-row">'+
         '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+'>'+
         '<span class="multi-date-status '+statusKind+'" aria-hidden="true">'+statusIcon+'</span>'+
-        '<span><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small></span>'+
+        '<span class="multi-date-title"><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small></span>'+
+        '<span class="multi-date-status-label '+statusKind+'">'+statusText+'</span>'+
       '</div>'+
       entries+
     '</label>';
-  }).join("");
+  }).join("") || '<div class="multi-filter-empty">No dates match this filter.</div>';
+
+  $("#multiDateFilters")?.querySelectorAll("[data-multi-filter]").forEach(b=>
+    b.classList.toggle("active",b.dataset.multiFilter===multiDateFilter)
+  );
 }
 function renderMultiCustomers(selected=[]){
   const set=new Set(selected);
@@ -790,6 +806,7 @@ function selectedMultiCustomers(){
 }
 function openMultipleEntries(prefillIncomplete=false){
   catchupContext=null;
+  multiDateFilter="all";
   $("#multiCustomer").innerHTML=customers.map(c=>'<option value="'+c.id+'">'+c.short+'</option>').join("");
   $("#multiType").innerHTML=types.map(t=>'<option value="'+t+'">'+t+'</option>').join("");
   $("#multiCustomerMode").checked=false;
@@ -950,6 +967,13 @@ $("#multiNavBtn").onclick=()=>openMultipleEntries(false);
 $("#historicalMultipleBtn").onclick=()=>openMultipleEntries(true);
 $("#multiBackBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multiSelectWeekdaysBtn").onclick=()=>renderMultiDates(historicalRows().filter(r=>!r.complete).map(r=>r.date));
+$("#multiDateFilters").onclick=e=>{
+  const b=e.target.closest("[data-multi-filter]");
+  if(!b)return;
+  const selected=currentMultiSelectedDates();
+  multiDateFilter=b.dataset.multiFilter;
+  renderMultiDates(selected);
+};
 $("#multiCustomerMode").onchange=()=>{
   const many=$("#multiCustomerMode").checked;
   $("#multiCustomer").classList.toggle("hidden",many);
