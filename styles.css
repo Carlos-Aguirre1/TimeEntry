@@ -348,3 +348,15 @@ button:disabled{opacity:.55;cursor:default}
   #customerGrid.wheel-layout.wheel-left .wheel-throttle{left:auto;right:24px}
   #customerGrid.wheel-layout .wheel-throttle .throttle-track{height:350px}
 }
+
+.multi-date-option{align-items:flex-start!important}
+.multi-date-copy{min-width:0;flex:1}
+.multi-existing{margin-top:7px;padding-top:7px;border-top:1px dashed #d9e1de}
+.multi-existing-row{margin-bottom:6px;padding:6px 7px;background:#f7f9f8;border-radius:8px}
+.multi-existing-row:last-child{margin-bottom:0}
+.multi-existing-row strong,.multi-existing-row span,.multi-existing-row small{display:block}
+.multi-existing-row strong{font-size:10px;color:#123b6b}
+.multi-existing-row span{font-size:10px;color:#52605b;font-weight:800;margin-top:1px}
+.multi-existing-row small{font-size:10px;color:#68726f;line-height:1.3;margin-top:2px}
+.multi-existing-row.queued{background:#fff9ea}
+.multi-existing.empty{font-size:10px;color:#8a9490}
