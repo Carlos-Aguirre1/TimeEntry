@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=50">
+<link rel="stylesheet" href="styles.css?v=51">
 </head>
 <body>
 <header>
@@ -26,7 +26,7 @@
       <div class="app-mark large">TE</div>
       <small>MCPME • TIMEENTRY</small>
       <h1>Fast Time Entry</h1>
-      <div class="version-badge">Prototype v50</div>
+      <div class="version-badge">Prototype v51</div>
       <h2>Customer. Time. Details. Done.</h2>
       <p>Capture CRM-ready time entries quickly from your phone, then transfer the queue to your laptop.</p>
       <div id="splashQuarterSummary" class="splash-quarter-summary" aria-label="Quarter hour summary"></div>
@@ -172,6 +172,7 @@
           <h2>Historical Time</h2>
         </div>
         <div class="historical-head-actions">
+          <button id="historicalCustomerBtn" class="ghost">By Customer</button>
           <button id="historicalMultipleBtn" class="ghost">Multiple Entries</button>
           <button id="historicalBackBtn" class="ghost">Fast Entry</button>
         </div>
@@ -203,6 +204,34 @@
     </section>
   </section>
 
+  <section id="customerHoursScreen" class="hidden">
+    <section class="card customer-hours-summary">
+      <div class="section-head">
+        <div>
+          <small>FOCUS VIEW</small>
+          <h2>Hours by Customer</h2>
+        </div>
+        <button id="customerHoursBackBtn" class="ghost">Historical</button>
+      </div>
+      <div class="field-group customer-period-control">
+        <label for="customerHoursPeriod">Timeframe</label>
+        <select id="customerHoursPeriod"></select>
+      </div>
+      <div id="customerHoursTotal" class="customer-hours-total"></div>
+      <div id="customerHoursGrid" class="customer-hours-grid"></div>
+    </section>
+    <section id="customerHoursDetailCard" class="card customer-hours-detail-card hidden">
+      <div class="section-head">
+        <div>
+          <small id="customerHoursDetailPeriod"></small>
+          <h2 id="customerHoursDetailTitle"></h2>
+        </div>
+        <button id="customerHoursDetailClose" class="ghost">All Customers</button>
+      </div>
+      <div id="customerHoursDetail"></div>
+    </section>
+  </section>
+
   <section id="history" class="card hidden">
     <div class="section-head">
       <div><h2>Saved time entries</h2><small>CRM-ready queue</small></div>
@@ -225,6 +254,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=50"></script>
+<script src="app.js?v=51"></script>
 </body>
 </html>
