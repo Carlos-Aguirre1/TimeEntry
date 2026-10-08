@@ -772,10 +772,27 @@ function renderMultiDates(selectedDates=[]){
     '</label>';
   }).join("");
 }
+function renderMultiCustomers(selected=[]){
+  const set=new Set(selected);
+  $("#multiCustomerGrid").innerHTML=customers.map(c=>
+    '<label class="multi-customer-option">'+
+      '<input type="checkbox" value="'+c.id+'" '+(set.has(c.id)?'checked':'')+'>'+
+      '<span>'+c.short+'</span>'+
+    '</label>'
+  ).join("");
+}
+function selectedMultiCustomers(){
+  if(!$("#multiCustomerMode").checked)return [$("#multiCustomer").value].filter(Boolean);
+  return [...$("#multiCustomerGrid").querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+}
 function openMultipleEntries(prefillIncomplete=false){
   catchupContext=null;
   $("#multiCustomer").innerHTML=customers.map(c=>'<option value="'+c.id+'">'+c.short+'</option>').join("");
   $("#multiType").innerHTML=types.map(t=>'<option value="'+t+'">'+t+'</option>').join("");
+  $("#multiCustomerMode").checked=false;
+  $("#multiCustomer").classList.remove("hidden");
+  $("#multiCustomerGrid").classList.add("hidden");
+  renderMultiCustomers(["PS"]);
   $("#multiCustomer").value="PS";
   $("#multiType").value="Meeting";
   $("#multiHours").value="0.5";
@@ -786,13 +803,13 @@ function openMultipleEntries(prefillIncomplete=false){
   showOnly("multiEntryScreen");
 }
 function saveMultipleEntries(){
-  const accountCode=$("#multiCustomer").value;
+  const accountCodes=selectedMultiCustomers();
   const type=$("#multiType").value;
   const hours=Number($("#multiHours").value);
   const details=$("#multiDetails").value.trim();
   const dates=[...$("#multiDateGrid").querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
 
-  if(!accountCode){$("#multiMessage").textContent="Choose a customer.";return}
+  if(!accountCodes.length){$("#multiMessage").textContent="Choose at least one customer.";return}
   if(!type){$("#multiMessage").textContent="Choose a type.";return}
   if(!details){$("#multiMessage").textContent="Add details.";return}
   if(!dates.length){$("#multiMessage").textContent="Select at least one date.";return}
@@ -800,21 +817,23 @@ function saveMultipleEntries(){
   const data=saved();
   let added=0,skipped=0;
   for(const date of dates){
-    const duplicate=data.some(x=>
-      x.accountCode===accountCode &&
-      x.date===date &&
-      x.type===type &&
-      Number(x.hours)===hours &&
-      String(x.details||"").trim().toLowerCase()===details.toLowerCase()
-    );
-    if(duplicate){skipped++;continue}
-    data.push({
-      id:crypto.randomUUID?.()||String(Date.now()+added),
-      timestamp:new Date().toISOString(),
-      batchCreated:true,
-      accountCode,date,type,hours,details
-    });
-    added++;
+    for(const accountCode of accountCodes){
+      const duplicate=data.some(x=>
+        x.accountCode===accountCode &&
+        x.date===date &&
+        x.type===type &&
+        Number(x.hours)===hours &&
+        String(x.details||"").trim().toLowerCase()===details.toLowerCase()
+      );
+      if(duplicate){skipped++;continue}
+      data.push({
+        id:crypto.randomUUID?.()||String(Date.now()+added),
+        timestamp:new Date().toISOString(),
+        batchCreated:true,
+        accountCode,date,type,hours,details
+      });
+      added++;
+    }
   }
   saveAll(data);
   renderHistory();
@@ -928,6 +947,11 @@ $("#multiNavBtn").onclick=()=>openMultipleEntries(false);
 $("#historicalMultipleBtn").onclick=()=>openMultipleEntries(true);
 $("#multiBackBtn").onclick=()=>{showOnly("portfolioScreen");renderPortfolio()};
 $("#multiSelectWeekdaysBtn").onclick=()=>renderMultiDates(historicalRows().filter(r=>!r.complete).map(r=>r.date));
+$("#multiCustomerMode").onchange=()=>{
+  const many=$("#multiCustomerMode").checked;
+  $("#multiCustomer").classList.toggle("hidden",many);
+  $("#multiCustomerGrid").classList.toggle("hidden",!many);
+};
 $("#multiSaveBtn").onclick=saveMultipleEntries;
 $("#fastEntryNavBtn").onclick=()=>{catchupContext=null;showOnly("portfolioScreen");renderPortfolio()};
 $("#historicalNavBtn").onclick=openHistorical;
