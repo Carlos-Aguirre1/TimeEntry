@@ -510,3 +510,54 @@ button:disabled{opacity:.55;cursor:default}
 .multi-date-option.complete{opacity:1}
 .multi-date-option.partial{border-color:#ead7a0}
 .multi-date-option.empty{border-color:#e8b6b6}
+
+/* Multiple Entries date status filters + high-visibility indicators */
+.multi-date-filters{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:7px;
+  margin:0 0 10px;
+}
+.multi-date-filters button{
+  border:1px solid #ccd7d3;
+  background:#fff;
+  color:#123b6b;
+  border-radius:10px;
+  min-height:42px;
+  padding:7px 8px;
+  font-weight:900;
+  font-size:11px;
+}
+.multi-date-filters button.active{
+  background:#123b6b;
+  color:#fff;
+  border-color:#123b6b;
+}
+.multi-date-select-row{width:100%}
+.multi-date-title{min-width:0;flex:1}
+.multi-date-status{
+  width:26px!important;
+  height:26px!important;
+  font-size:15px!important;
+  border-width:2px!important;
+}
+.multi-date-status-label{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  min-width:72px;
+  border-radius:999px;
+  padding:5px 7px;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.03em;
+  white-space:nowrap;
+}
+.multi-date-status-label.complete{background:#e7f5ed;color:#17653c;border:1px solid #7fc49a}
+.multi-date-status-label.partial{background:#fff3cd;color:#8a5c00;border:1px solid #e6c66a}
+.multi-date-status-label.empty{background:#fde8e8;color:#9b2f2f;border:1px solid #e2a0a0}
+.multi-filter-empty{padding:20px;text-align:center;color:#68726f;border:1px dashed #cdd8d4;border-radius:12px}
+@media(max-width:600px){
+  .multi-date-filters{grid-template-columns:1fr 1fr}
+  .multi-date-status-label{min-width:64px;font-size:8px}
+}
