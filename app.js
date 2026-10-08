@@ -27,7 +27,7 @@ let selectedHours=1;
 let editingId=null;
 let saveLocked=false;
 let wheelAngle=0,wheelActive=false,wheelDragging=false,wheelStartY=0,wheelStartAngle=0,wheelMoved=false;
-let historicalFilter="missing";
+let historicalFilter="all";
 let catchupContext=null;
 const HISTORY_START="2026-08-01";
 const expandedHistoricalDays=new Set();
@@ -172,10 +172,14 @@ function renderPortfolio(){
 function openCustomer(id){
   editingId=null;
   activeCustomer=customers.find(c=>c.id===id);
-  selectedHours=catchupContext?Math.max(.5,Math.min(7,catchupContext.remaining)):1;
+  selectedHours=catchupContext
+    ? (catchupContext.mode==="additional" ? 0.5 : Math.max(.5,Math.min(7,catchupContext.remaining)))
+    : 1;
   $("#activeCustomerName").textContent=activeCustomer.short;
   $("#activeCustomerDetail").textContent=catchupContext
-    ? "Historical catch-up • "+formatHistoryDate(catchupContext.date)+" • "+catchupContext.remaining.toFixed(1)+" h remaining"
+    ? (catchupContext.mode==="additional"
+        ? "Historical additional time • "+formatHistoryDate(catchupContext.date)+" • already "+catchupContext.effective.toFixed(1)+" h"
+        : "Historical catch-up • "+formatHistoryDate(catchupContext.date)+" • "+catchupContext.remaining.toFixed(1)+" h remaining")
     : "Customer code";
   $("#entryDate").value=catchupContext?.date||todayISO();
   $("#entryType").value="Meeting";
@@ -421,7 +425,7 @@ function renderHistorical(){
       .filter(([,h])=>Number(h)>0)
       .map(([code,h])=>'<span class="history-chip">'+code+' '+Number(h).toFixed(1)+'</span>').join("");
     const status=r.complete
-      ? '<span class="history-status complete">Complete ✓</span>'
+      ? '<span class="history-status complete">'+r.effective.toFixed(1)+' h ✓'+(r.effective>7?' • +'+(r.effective-7).toFixed(1)+' over':'')+'</span>'
       : '<span class="history-status missing">'+r.remaining.toFixed(1)+' h missing</span>';
     const queued=r.queued>0?'<small class="queued-note">'+r.queued.toFixed(1)+' h queued in Fast Entry</small>':"";
     const expanded=expandedHistoricalDays.has(r.date) || true;
@@ -450,12 +454,19 @@ function renderHistorical(){
       '<div class="history-breakdown">'+(chips||'<span class="history-chip empty">No submitted time</span>')+'</div>'+
       queued+
       '<div class="history-details always-visible">'+detailsContent+'</div>'+
-      (!r.complete?'<button type="button" class="primary history-add" data-history-date="'+r.date+'" data-history-remaining="'+r.remaining+'">Add Missing Time • '+r.remaining.toFixed(1)+' h</button>':"")+
+      (!r.complete
+        ? '<button type="button" class="primary history-add" data-history-date="'+r.date+'" data-history-remaining="'+r.remaining+'">Add Missing Time • '+r.remaining.toFixed(1)+' h</button>'
+        : '<button type="button" class="ghost history-additional" data-history-date="'+r.date+'" data-history-effective="'+r.effective+'">Add Additional Time</button>')+
     '</article>';
   }).join(""):'<p class="empty-history">No days in this view.</p>';
 
   $("#historicalList")?.querySelectorAll(".history-add").forEach(b=>b.onclick=()=>{
-    catchupContext={date:b.dataset.historyDate,remaining:Number(b.dataset.historyRemaining)};
+    catchupContext={mode:"missing",date:b.dataset.historyDate,remaining:Number(b.dataset.historyRemaining)};
+    showOnly("portfolioScreen");
+    renderPortfolio();
+  });
+  $("#historicalList")?.querySelectorAll(".history-additional").forEach(b=>b.onclick=()=>{
+    catchupContext={mode:"additional",date:b.dataset.historyDate,effective:Number(b.dataset.historyEffective)};
     showOnly("portfolioScreen");
     renderPortfolio();
   });
@@ -466,7 +477,7 @@ function renderHistorical(){
 }
 function openHistorical(){
   catchupContext=null;
-  historicalFilter="missing";
+  historicalFilter="all";
   renderHistorical();
   showOnly("historicalScreen");
 }
@@ -492,7 +503,11 @@ function renderMultiDates(selectedDates=[]){
   const rowsByDate=Object.fromEntries(historicalRows().map(r=>[r.date,r]));
   $("#multiDateGrid").innerHTML=batchDateRange().map(date=>{
     const r=rowsByDate[date];
-    const meta=r ? (r.complete?"Complete":r.remaining.toFixed(1)+" h missing") : "No history";
+    const meta=r
+      ? (r.complete
+          ? r.effective.toFixed(1)+" h logged"+(r.effective>7?" • +"+(r.effective-7).toFixed(1)+" over":"")
+          : r.remaining.toFixed(1)+" h missing")
+      : "No history";
     return '<label class="multi-date-option '+(r?.complete?"complete":"")+'">'+
       '<input type="checkbox" value="'+date+'" '+(selected.has(date)?"checked":"")+'>'+
       '<span><strong>'+formatHistoryDate(date)+'</strong><small>'+meta+'</small></span>'+
