@@ -166,7 +166,7 @@ function customerBadge(c){return '<span class="player-photo customer-avatar"><st
 function renderPortfolio(){
   $("#portfolioProgress").textContent=customers.length+" accounts";
   $("#customerGrid").innerHTML=customers.map(c=>`<button type="button" class="player-tile" data-id="${c.id}">${customerBadge(c)}<span class="jersey">ACCOUNT</span><strong>${c.short}</strong><span class="status-label">Tap to enter time</span></button>`).join("");
-  $("#customerGrid").querySelectorAll(".player-tile").forEach(b=>b.onclick=()=>{if(wheelMoved){wheelMoved=false;return}openCustomer(b.dataset.id)});
+  $("#customerGrid").querySelectorAll(".player-tile").forEach(b=>b.onclick=()=>openCustomer(b.dataset.id));
   applyRosterLayout();
 }
 function openCustomer(id){
@@ -583,7 +583,12 @@ function applyRosterLayout(){
  toggle?.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.layout===mode));
  if(!grid)return;
  grid.classList.toggle("wheel-layout",mode==="wheel");
- if(mode==="wheel")setupRadialWheel();else{grid.classList.remove("wheel-active","wheel-left");grid.style.removeProperty("--wheel-angle")}
+ if(mode==="wheel")setupRadialWheel();else{
+   wheelMoved=false;
+   wheelDragging=false;
+   grid.classList.remove("wheel-active","wheel-left");
+   grid.style.removeProperty("--wheel-angle");
+ }
 }
 function setupRadialWheel(){
  const grid=$("#customerGrid"); if(!grid)return;
@@ -661,7 +666,13 @@ function setupRadialWheel(){
    grid.addEventListener("pointermove",e=>{if(!wheelDragging)return;const dy=e.clientY-wheelStartY;if(Math.abs(dy)>7)wheelMoved=true;wheelAngle=wheelStartAngle+dy*.38*(grid.classList.contains("wheel-left")?-1:1);grid.style.setProperty("--wheel-angle",wheelAngle+"deg");e.preventDefault()},{passive:false});
    const stop=e=>{if(!wheelDragging)return;wheelDragging=false;try{grid.releasePointerCapture?.(e.pointerId)}catch(_){}};
    grid.addEventListener("pointerup",stop);grid.addEventListener("pointercancel",stop);
-   grid.addEventListener("click",e=>{if(wheelMoved){e.preventDefault();e.stopPropagation();wheelMoved=false}},true);
+   grid.addEventListener("click",e=>{
+     if(grid.classList.contains("wheel-layout")&&wheelMoved){
+       e.preventDefault();
+       e.stopPropagation();
+       wheelMoved=false;
+     }
+   },true);
  }
 }
 
