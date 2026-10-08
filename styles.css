@@ -752,3 +752,84 @@ button:disabled{opacity:.55;cursor:default}
 @media(max-width:560px){
   .customer-hours-grid{grid-template-columns:1fr}
 }
+
+/* v52 monthly vacation picker */
+.month-summary-wrap{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:stretch;
+}
+.month-summary-wrap.selected{
+  border-radius:12px;
+  box-shadow:inset 0 0 0 2px #123b6b;
+}
+.month-summary-wrap .month-summary-row{
+  width:100%;
+}
+.month-vacation-btn{
+  border:1px solid #9dbbe0;
+  background:#eef6ff;
+  color:#174b82;
+  border-radius:12px;
+  padding:10px 12px;
+  font-weight:900;
+  min-width:126px;
+}
+.vacation-modal{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(10,30,48,.48);
+}
+.vacation-modal-card{
+  width:min(620px,100%);
+  max-height:86vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+.vacation-modal-note{
+  margin:0 0 12px;
+  color:#68726f;
+  font-size:11px;
+}
+.vacation-calendar{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.vacation-day{
+  display:block;
+  border:1px solid #d9e1de;
+  border-radius:12px;
+  background:#fff;
+  padding:8px;
+  cursor:pointer;
+  min-height:66px;
+}
+.vacation-day input{position:absolute;opacity:0;pointer-events:none}
+.vacation-day span{display:flex;flex-direction:column;gap:3px;align-items:center}
+.vacation-day strong{font-size:9px;color:#68726f}
+.vacation-day b{font-size:18px;color:#123b6b}
+.vacation-day.selected{
+  background:#e7f1ff;
+  border:2px solid #6e9bd0;
+}
+.vacation-day.selected b{color:#174b82}
+.vacation-modal-actions{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:14px;
+}
+@media(max-width:600px){
+  .month-summary-wrap{grid-template-columns:1fr}
+  .month-vacation-btn{width:100%}
+  .vacation-calendar{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
