@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TimeEntry • Fast Time Entry</title>
-<link rel="stylesheet" href="styles.css?v=43">
+<link rel="stylesheet" href="styles.css?v=44">
 </head>
 <body>
 <header>
@@ -25,7 +25,7 @@
       <div class="app-mark large">TE</div>
       <small>MCPME • TIMEENTRY</small>
       <h1>Fast Time Entry</h1>
-      <div class="version-badge">Prototype v43</div>
+      <div class="version-badge">Prototype v44</div>
       <h2>Customer. Time. Details. Done.</h2>
       <p>Capture CRM-ready time entries quickly from your phone, then transfer the queue to your laptop.</p>
       <div class="splash-benefits">
@@ -100,8 +100,15 @@
       <p class="multi-intro">Enter the time once, then choose every date that should receive the same entry.</p>
 
       <div class="field-group">
-        <label>Customer</label>
+        <div class="multi-customer-head">
+          <label>Customer</label>
+          <label class="multi-customer-toggle">
+            <input id="multiCustomerMode" type="checkbox">
+            <span>Apply to multiple customers</span>
+          </label>
+        </div>
         <select id="multiCustomer"></select>
+        <div id="multiCustomerGrid" class="multi-customer-grid hidden"></div>
       </div>
 
       <div class="field-group">
@@ -209,6 +216,6 @@
   </section>
 </main>
 <div id="saveToast" class="save-toast" role="status" aria-live="polite"></div>
-<script src="app.js?v=43"></script>
+<script src="app.js?v=44"></script>
 </body>
 </html>
