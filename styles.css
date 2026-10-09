@@ -1037,3 +1037,204 @@ button:disabled{opacity:.55;cursor:default}
     font-size:14px!important;
   }
 }
+
+/* v60 compact quarter dashboard: reclaim empty vertical space */
+.splash-quarter-summary{
+  gap:10px!important;
+  align-items:stretch;
+}
+.quarter-card.compact{
+  min-height:0!important;
+  height:auto!important;
+  padding:12px!important;
+  gap:8px!important;
+  justify-content:flex-start!important;
+}
+.quarter-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+  min-height:48px;
+}
+.quarter-top>div{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.quarter-card.compact .quarter-name{
+  font-size:22px!important;
+  line-height:1;
+}
+.quarter-card.compact .quarter-range{
+  font-size:10px;
+  line-height:1.2;
+}
+.quarter-card.compact .quarter-completion{
+  position:static!important;
+  flex:0 0 50px;
+  width:50px!important;
+  height:50px!important;
+  min-width:50px;
+  border-width:4px!important;
+  font-size:14px!important;
+}
+.quarter-metric{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:8px;
+  padding:4px 0 2px;
+}
+.quarter-metric strong{
+  margin:0!important;
+  font-size:20px!important;
+  line-height:1.05;
+  color:#123b6b;
+}
+.quarter-metric strong span{
+  font-size:12px;
+  font-weight:900;
+}
+.quarter-metric b{
+  text-align:right;
+  font-size:10px;
+  line-height:1.15;
+  color:#8a5c00;
+}
+.quarter-target{
+  margin-top:-3px;
+  font-size:9px;
+  font-weight:900;
+  color:#68726f;
+}
+.quarter-holidays-compact{
+  margin-top:auto;
+  padding-top:8px;
+  border-top:1px solid #e5e9e7;
+  display:flex;
+  align-items:flex-start;
+  gap:6px;
+  color:#563b91;
+  font-size:8.5px;
+  line-height:1.25;
+  font-weight:850;
+}
+.quarter-holidays-compact .quarter-holiday-count{
+  min-width:30px;
+  padding:2px 5px;
+}
+@media(max-width:650px){
+  .splash-quarter-summary{
+    gap:8px!important;
+  }
+  .quarter-card.compact{
+    padding:10px!important;
+  }
+  .quarter-top{
+    min-height:44px;
+  }
+  .quarter-card.compact .quarter-name{
+    font-size:21px!important;
+  }
+  .quarter-card.compact .quarter-completion{
+    width:46px!important;
+    height:46px!important;
+    min-width:46px;
+    flex-basis:46px;
+    font-size:13px!important;
+  }
+  .quarter-metric{
+    display:block;
+  }
+  .quarter-metric strong{
+    display:block;
+    font-size:19px!important;
+  }
+  .quarter-metric b{
+    display:block;
+    margin-top:3px;
+    text-align:left;
+  }
+  .quarter-holidays-compact{
+    font-size:8px;
+  }
+}
+
+/* v61 historical month progress + saved-hour feedback */
+.month-summary-total.progress-total{
+  display:grid!important;
+  grid-template-columns:1fr auto;
+  gap:8px 12px;
+  align-items:center;
+}
+.month-summary-total.progress-total>div:first-child{min-width:0}
+.month-total-pct{
+  font-size:20px;
+  color:#fff;
+  line-height:1;
+}
+.month-summary-total .month-progress-track{
+  grid-column:1 / -1;
+}
+.month-summary-progress{
+  min-width:0;
+  flex:1;
+}
+.month-summary-metrics{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px 10px;
+  justify-content:flex-end;
+  align-items:center;
+}
+.month-saved{
+  color:#174b82!important;
+}
+.month-progress-line{
+  margin-top:7px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.month-progress-track{
+  height:8px;
+  flex:1;
+  min-width:70px;
+  border-radius:999px;
+  overflow:hidden;
+  background:#dfe6e3;
+}
+.month-progress-track i{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:#d8ad31;
+  transition:width .2s ease;
+}
+.month-percent{
+  min-width:34px;
+  text-align:right;
+  color:#123b6b;
+  font-size:12px;
+}
+.month-summary-total .month-progress-track{
+  background:rgba(255,255,255,.25);
+}
+.month-summary-total .month-progress-track i{
+  background:#d8ad31;
+}
+@media(max-width:650px){
+  .month-summary-row{
+    align-items:flex-start!important;
+  }
+  .month-summary-metrics{
+    justify-content:flex-start;
+  }
+  .month-progress-line{
+    width:100%;
+  }
+}
+
+/* v62 historical refresh from Salesforce screenshots */
