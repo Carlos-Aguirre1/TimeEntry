@@ -42,6 +42,21 @@ async function getActiveTab(){
   if(!tab?.id)throw new Error("No active browser tab.");
   return tab;
 }
+async function sendSimpleToSalesforce(action){
+  const tab=await getActiveTab();
+  const message={source:"timeentry-extension",action};
+  const trySend=()=>chrome.tabs.sendMessage(tab.id,message);
+  try{return await trySend()}
+  catch(err){
+    const msg=String(err?.message||err||"");
+    if(!msg.toLowerCase().includes("receiving end does not exist") &&
+       !msg.toLowerCase().includes("could not establish connection")) throw err;
+    await chrome.scripting.executeScript({target:{tabId:tab.id},files:["content.js"]});
+    await new Promise(r=>setTimeout(r,250));
+    return await trySend();
+  }
+}
+
 async function sendToSalesforce(action){
   const queue=parseQueue();
   const stored=await chrome.storage.local.get(["accountMapping","queueCursor"]);
@@ -146,5 +161,22 @@ $("#runQueue").onclick=async()=>{
     setStatus("Running queue. Keep the Salesforce tab open...");
     const r=await sendToSalesforce("runQueue");
     setStatus(r.message||"Queue complete.");
+  }catch(e){setStatus(e.message,true)}
+};
+$("#submitAndCapture").onclick=async()=>{
+  try{
+    const q=parseQueue();
+    if(!confirm("Submit the remaining "+q.length+" queue entries, then close the final blank form and capture the Time Tracking historical table?"))return;
+    setStatus("Submitting entries, then capturing Historical...");
+    const r=await sendToSalesforce("submitAndCapture");
+    setStatus(r.message||"Entries submitted and Historical captured.");
+  }catch(e){setStatus(e.message,true)}
+};
+$("#captureHistorical").onclick=async()=>{
+  try{
+    setStatus("Capturing the visible Time Tracking historical table...");
+    const r=await sendSimpleToSalesforce("captureHistorical");
+    if(!r?.ok)throw new Error(r?.error||"Historical capture failed.");
+    setStatus(r.message||"Historical snapshot captured.");
   }catch(e){setStatus(e.message,true)}
 };
