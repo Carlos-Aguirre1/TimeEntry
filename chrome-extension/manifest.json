@@ -1,23 +1,42 @@
 {
   "manifest_version": 3,
-  "name": "TimeEntry Salesforce Transfer 3.20",
-  "version": "3.20.0",
-  "description": "Transfers sanitized TimeEntry queue records into the currently open Salesforce Time Tracking form.",
-  "permissions": ["activeTab", "storage", "scripting"],
-  "host_permissions": ["https://*.salesforce.com/*", "https://*.force.com/*", "https://*.lightning.force.com/*", "https://carlos-aguirre1.github.io/TimeEntry/*"],
+  "name": "TimeEntry Salesforce Transfer 3.21",
+  "version": "3.21.0",
+  "description": "Transfers TimeEntry queue records into Salesforce and can capture the Time Tracking historical table without manual screenshots.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.salesforce.com/*",
+    "https://*.force.com/*",
+    "https://*.lightning.force.com/*",
+    "https://carlos-aguirre1.github.io/TimeEntry/*"
+  ],
   "action": {
     "default_title": "TimeEntry Transfer",
     "default_popup": "popup.html"
   },
   "content_scripts": [
     {
-      "matches": ["https://*.salesforce.com/*", "https://*.force.com/*", "https://*.lightning.force.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://*.salesforce.com/*",
+        "https://*.force.com/*",
+        "https://*.lightning.force.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://carlos-aguirre1.github.io/TimeEntry/transfer.html*"],
-      "js": ["transfer.js"],
+      "matches": [
+        "https://carlos-aguirre1.github.io/TimeEntry/transfer.html*"
+      ],
+      "js": [
+        "transfer.js"
+      ],
       "run_at": "document_idle"
     }
   ]
