@@ -37,47 +37,47 @@ const HISTORY_START="2026-08-01";
 const expandedHistoricalDays=new Set();
 
 const historicalSubmitted={
-  "2026-08-10":{hours:9.5,breakdown:{KI:3,HC:1.5,CPF:1.5,RB:3,PS:.5}},
-  "2026-08-11":{hours:7,breakdown:{IS:2.5,HC:2.5,PS:2}},
-  "2026-08-12":{hours:7,breakdown:{HC:2.5,OT:3,PS:1.5}},
+  "2026-08-10":{hours:9.5,breakdown:{PS:.5,KI:3,HC:1.5,CPF:1.5,RB:3}},
+  "2026-08-11":{hours:7,breakdown:{PS:2,IS:2.5,HC:2.5}},
+  "2026-08-12":{hours:7,breakdown:{PS:1.5,HC:2.5,OT:3}},
   "2026-08-13":{hours:7,breakdown:{PS:2,HC:1.5,BL:2,OT:1.5}},
-  "2026-08-14":{hours:7.5,breakdown:{MAN:1,IS:2,TD:2,HC:2,PS:.5}},
+  "2026-08-14":{hours:7.5,breakdown:{PS:.5,MAN:1,IS:2,TD:2,HC:2}},
   "2026-08-17":{hours:6.5,breakdown:{PS:3.5,IS:1.5,OT:1.5}},
   "2026-08-18":{hours:6.5,breakdown:{PS:4,OT:2.5}},
   "2026-08-19":{hours:6,breakdown:{HC:3,WM:2.5,PS:.5}},
   "2026-08-20":{hours:6.5,breakdown:{PS:5,KI:1.5}},
-  "2026-08-21":{hours:7,breakdown:{CRC:1.5,IS:1.5,BL:2.5,PS:1.5}},
-  "2026-08-24":{hours:7.5,breakdown:{KI:1.5,IS:1.5,BL:3.5,PS:1}},
-  "2026-08-25":{hours:8.5,breakdown:{PS:4.5,CPF:2,HC:2}},
-  "2026-08-26":{hours:7,breakdown:{IS:1,OT:1.5,PS:3,KI:1.5}},
+  "2026-08-21":{hours:7,breakdown:{PS:1.5,CRC:1.5,IS:1.5,BL:2.5}},
+  "2026-08-24":{hours:7,breakdown:{PS:.5,KI:1.5,IS:1.5,BL:3.5}},
+  "2026-08-25":{hours:10.5,breakdown:{PS:6.5,CPF:2,HC:2}},
+  "2026-08-26":{hours:7,breakdown:{PS:3,IS:1,OT:1.5,KI:1.5}},
   "2026-08-27":{hours:7,breakdown:{PS:3.5,HC:1.5,KI:2}},
   "2026-08-28":{hours:7.5,breakdown:{PS:1,TD:3,BL:1.5,IS:2}},
   "2026-08-31":{hours:5.5,breakdown:{PS:4,IS:1.5}},
-  "2026-09-01":{hours:6,breakdown:{PS:1.5,HC:2.5,BL:.5,KI:1.5}},
-  "2026-09-02":{hours:4.5,breakdown:{PS:1.5,KI:1.5,IS:1.5}},
-  "2026-09-03":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-04":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-01":{hours:7,breakdown:{PS:1.5,HC:2.5,BL:.5,KI:2.5}},
+  "2026-09-02":{hours:7,breakdown:{PS:4,KI:1.5,IS:1.5}},
+  "2026-09-03":{hours:7,breakdown:{PS:3.5,BL:3.5}},
+  "2026-09-04":{hours:7,breakdown:{PS:4.5,HC:2.5}},
   "2026-09-07":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-08":{hours:3.5,breakdown:{PS:3.5}},
-  "2026-09-09":{hours:2.5,breakdown:{BL:2,PS:.5}},
-  "2026-09-10":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-11":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-14":{hours:2.5,breakdown:{CRC:2,PS:.5}},
-  "2026-09-15":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-16":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-17":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-18":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-08":{hours:7,breakdown:{KI:3.5,PS:3.5}},
+  "2026-09-09":{hours:8.5,breakdown:{BL:3.5,PS:3.5,KI:1.5}},
+  "2026-09-10":{hours:4.5,breakdown:{HC:2.5,PS:2}},
+  "2026-09-11":{hours:3.5,breakdown:{PS:3.5}},
+  "2026-09-14":{hours:5.5,breakdown:{PS:3.5,CRC:2}},
+  "2026-09-15":{hours:3.5,breakdown:{PS:3.5}},
+  "2026-09-16":{hours:3.5,breakdown:{PS:3.5}},
+  "2026-09-17":{hours:3.5,breakdown:{PS:3.5}},
+  "2026-09-18":{hours:3.5,breakdown:{PS:3.5}},
   "2026-09-21":{hours:7,breakdown:{OT:7}},
   "2026-09-22":{hours:7,breakdown:{OT:7}},
   "2026-09-23":{hours:7,breakdown:{OT:7}},
   "2026-09-24":{hours:7,breakdown:{PS:7}},
   "2026-09-25":{hours:7,breakdown:{PS:7}},
-  "2026-09-28":{hours:.5,breakdown:{PS:.5}},
-  "2026-09-29":{hours:1.5,breakdown:{PS:.5,KI:1}},
-  "2026-09-30":{hours:.5,breakdown:{PS:.5}},
+  "2026-09-28":{hours:3.5,breakdown:{PS:3.5}},
+  "2026-09-29":{hours:4.5,breakdown:{PS:3.5,KI:1}},
+  "2026-09-30":{hours:3.5,breakdown:{PS:3.5}},
   "2026-10-01":{hours:7,breakdown:{PS:1.5,IS:5.5}},
-  "2026-10-02":{hours:1.5,breakdown:{BL:1,PS:.5}},
-  "2026-10-05":{hours:3,breakdown:{MAN:1,BHC:.5,CPF:1,PS:.5}},
+  "2026-10-02":{hours:4.5,breakdown:{PS:3.5,BL:1}},
+  "2026-10-05":{hours:6,breakdown:{PS:3.5,MAN:1,BHC:.5,CPF:1}},
   "2026-10-06":{hours:7,breakdown:{PS:5.5,RB:1.5}},
   "2026-10-07":{hours:.5,breakdown:{PS:.5}},
   "2026-10-08":{hours:.5,breakdown:{PS:.5}},
@@ -91,6 +91,9 @@ const historicalSubmitted={
   "2026-10-20":{hours:.5,breakdown:{PS:.5}},
   "2026-10-21":{hours:.5,breakdown:{PS:.5}}
 };
+
+const SALESFORCE_SNAPSHOT_RECORD_COUNT=154;
+const SALESFORCE_SNAPSHOT_TOTAL_HOURS=263.0;
 
 const historicalDetails={
   "2026-08-10":[
@@ -151,16 +154,19 @@ const historicalDetails={
     {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
   ],
   "2026-08-24":[
-    {accountCode:"KI",type:"Troubleshooting",hours:1.5,details:"KIOSK customer migration planning initiative."},
-    {accountCode:"IS",type:"Troubleshooting",hours:1.5,details:"Storage expansion / cloud upgrade coordination."},
-    {accountCode:"BL",type:"Troubleshooting",hours:1.5,details:"HighRadius Pay & Remit investigation."},
-    {accountCode:"BL",type:"Troubleshooting",hours:2,details:"Prepared for and attended two working sessions with customer."},
-    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
+    {accountCode:"KI",type:"Other",hours:1.5,details:"KIOSK - Assisted on an active customer migration planning initiative involving MobiControl client migration."},
+    {accountCode:"IS",type:"Troubleshooting",hours:1.5,details:"Storage Expansion / Cloud Upgrade Coordination with IntegraServ."},
+    {accountCode:"BL",type:"Troubleshooting",hours:1.5,details:"HighRadius Pay & Remit investigation with BlueLinx."},
+    {accountCode:"BL",type:"Troubleshooting",hours:2,details:"Prepared for and attended two working sessions with Nathan and the customer."}
   ],
   "2026-08-25":[
-    {accountCode:"PS",type:"Xsight",hours:2.5,details:"MCP / OAuth / QA environment testing."},
-    {accountCode:"CPF",type:"Troubleshooting",hours:2,details:"Customer escalation involving MobiControl application deployment failures."},
-    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
+    {accountCode:"PS",type:"Initiative",hours:1.5,details:"XSight Maturity Model - continued work on web application."},
+    {accountCode:"PS",type:"Initiative",hours:2,details:"Continued work on maturity model."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
+    {accountCode:"PS",type:"Xsight",hours:2.5,details:"MCP / OAuth / QA Environment Testing."},
+    {accountCode:"CPF",type:"Troubleshooting",hours:2,details:"Customer escalation involving ongoing MobiControl application deployment failures."},
+    {accountCode:"HC",type:"Xsight",hours:2,details:"Hosted a working session focused on XSight adoption and Operational Intelligence."}
   ],
   "2026-08-26":[
     {accountCode:"IS",type:"Troubleshooting",hours:1,details:"Workwear Outfitters escalation through IntegraServ."},
@@ -175,29 +181,45 @@ const historicalDetails={
     {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
   ],
   "2026-09-01":[
-    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
-    {accountCode:"PS",type:"Meeting",hours:1,details:"Team Anu morning meetings"},
-    {accountCode:"HC",type:"Other",hours:2.5,details:"Customer reporting issue on Honeywell CK65 devices."},
-    {accountCode:"BL",type:"Initiative",hours:.5,details:"Following up with Vahn regarding a customer issue."},
-    {accountCode:"KI",type:"Initiative",hours:1.5,details:"Clarified customer migration quote/request context."}
-  ],
-  "2026-09-02":[
-    {accountCode:"PS",type:"Meeting",hours:1,details:"XSight maturity model team meeting to discuss progress"},
-    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
-    {accountCode:"KI",type:"Meeting",hours:1.5,details:"Received signed quote from Raja. Reached out to the AM to answer a security and compliance question."},
-    {accountCode:"IS",type:"Initiative",hours:1.5,details:"Actively worked with the IS team on environment readiness and customer planning before the onsite visit."}
-  ],
-  "2026-09-08":[
-    {accountCode:"PS",type:"Xsight",hours:3,details:"Continued working on XSight adoption web engine."},
+    {accountCode:"HC",type:"Troubleshooting",hours:2.5,details:"Customer reporting issue on Honeywell CK65 devices."},
+    {accountCode:"BL",type:"Initiative",hours:.5,details:"Following up regarding a customer issue and rescheduling the meeting."},
+    {accountCode:"KI",type:"Initiative",hours:2.5,details:"Clarified the customer migration request and situation for KIOSK."},
     {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
   ],
+  "2026-09-02":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
+    {accountCode:"PS",type:"Meeting",hours:2.5,details:"Continued work on maturity model"},
+    {accountCode:"KI",type:"Meeting",hours:1.5,details:"Received signed quote from Raja and followed up on a security and compliance question."},
+    {accountCode:"IS",type:"Initiative",hours:1.5,details:"Worked with the IS team on environment readiness and customer planning before onsite visit."},
+    {accountCode:"PS",type:"Meeting",hours:1,details:"XSight maturity model team meeting to discuss progress"}
+  ],
+  "2026-09-03":[
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
+    {accountCode:"PS",type:"Initiative",hours:3,details:"Continued work on maturity model."},
+    {accountCode:"BL",type:"Troubleshooting",hours:3.5,details:"BlueLinx working session covering troubleshooting and Pay & Remit application issues."}
+  ],
+  "2026-09-04":[
+    {accountCode:"PS",type:"Initiative",hours:4,details:"Continued working on XSight maturity model"},
+    {accountCode:"HC",type:"Initiative",hours:2,details:"HL Port Review Session Conducted a Working Session to review ports with customer."},
+    {accountCode:"HC",type:"Initiative",hours:.5,details:"(Correcting total hours) HL Port Review Session Conducted a Working Session to review ports with customer."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
+  ],
+  "2026-09-08":[
+    {accountCode:"KI",type:"Troubleshooting",hours:3.5,details:"Troubleshooting database growth: MC Archive database capacity issues."},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
+    {accountCode:"PS",type:"Xsight Initiative",hours:3,details:"Continued working on XSight adoption web engine."}
+  ],
   "2026-09-09":[
-    {accountCode:"BL",type:"Initiative",hours:2,details:"Setting up a working session with the BlueLinx team to discuss best practices."},
+    {accountCode:"BL",type:"Meeting",hours:1.5,details:"Working session to discuss best practices with customer regarding firmware upgrade process."},
+    {accountCode:"PS",type:"Initiative",hours:3,details:"XSight Maturity Model meeting to discuss progress and next steps."},
+    {accountCode:"KI",type:"Meeting",hours:1.5,details:"Meeting with AM to discuss customer review and current motions."},
+    {accountCode:"BL",type:"Initiative",hours:2,details:"Setting up working session with BlueLinx team to discuss best practices upgrading firmware."},
     {accountCode:"PS",type:"Meeting",hours:.5,details:"Morning team meeting"}
   ],
   "2026-09-14":[
-    {accountCode:"CRC",type:"Other",hours:2,details:"Account review with Jay Rami and Tom to discuss CR California status and renewal areas."},
-    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"}
+    {accountCode:"PS",type:"Initiative",hours:3,details:"Continued working on XSight maturity model"},
+    {accountCode:"PS",type:"Meeting",hours:.5,details:"Team Anu morning meetings"},
+    {accountCode:"CRC",type:"Other",hours:2,details:"Account Review with Jay Rami and Tom to discuss CR California."}
   ],
   "2026-09-21":[
     {accountCode:"OT",type:"Other",hours:7,details:"Travelling to onsite QBR"}
@@ -223,10 +245,12 @@ const historicalDetails={
     {accountCode:"IS",type:"Troubleshooting",hours:3,details:"Assisting Jeff and Michael with a profile download issue at the Tifton distribution centre."}
   ],
   "2026-10-02":[
+    {accountCode:"PS",type:"Initiative",hours:3,details:"Continued working on XSight maturity model"},
     {accountCode:"BL",type:"Meeting",hours:1,details:"Reviewing recording, as I was not able to attend"},
     {accountCode:"PS",type:"Meeting",hours:.5,details:"Morning meeting with the team Anu."}
   ],
   "2026-10-05":[
+    {accountCode:"PS",type:"Initiative",hours:3,details:"Continued working on XSight maturity model"},
     {accountCode:"MAN",type:"Troubleshooting",hours:1,details:"Working with Jamal on updating devices time zone via mx config."},
     {accountCode:"BHC",type:"Meeting",hours:.5,details:"Reviewing account and preparing account for transition to TAM"},
     {accountCode:"CPF",type:"Meeting",hours:1,details:"Spent time updating new TAM accounts"},
@@ -425,17 +449,18 @@ function renderSplashQuarters(){
     const hasRows=rowsForQuarter(q.key).length>0;
     const completionBase=hasRows?s.expected:s.fullExpected;
     const completionPct=completionBase>0?Math.min(100,Math.round((s.logged/completionBase)*100)):0;
-    return '<button type="button" class="quarter-card '+(active?'active':'')+'" data-quarter="'+q.key+'">'+
-      '<span class="quarter-completion '+(completionPct>=100?'complete':(completionPct>0?'progress':'empty'))+'" aria-label="'+completionPct+' percent complete">'+completionPct+'%</span>'+
-      '<span class="quarter-name">'+q.label+'</span>'+
-      '<span class="quarter-range">'+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+' – '+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,"")+'</span>'+
+    const holidays=holidaysInRange(q.start,q.end);
+    const holidayNames=holidays.map(h=>h.name+' '+holidayShortDate(h.date)).join(' • ');
+    return '<button type="button" class="quarter-card compact '+(active?'active':'')+'" data-quarter="'+q.key+'">'+
+      '<div class="quarter-top">'+
+        '<div><span class="quarter-name">'+q.label+'</span><span class="quarter-range">'+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+' – '+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,"")+'</span></div>'+
+        '<span class="quarter-completion '+(completionPct>=100?'complete':(completionPct>0?'progress':'empty'))+'" aria-label="'+completionPct+' percent complete">'+completionPct+'%</span>'+
+      '</div>'+
       (hasRows
-        ? '<strong>'+s.logged.toFixed(1)+' / '+s.expected.toFixed(1)+' h</strong>'+
-          '<small>'+s.missing.toFixed(1)+' h missing • Quarter target '+s.fullExpected.toFixed(1)+' h</small>'+
-          '<div class="quarter-holiday-box"><span class="quarter-holiday-count">H '+holidaysInRange(q.start,q.end).length+'</span><span>'+holidaySummaryText(q.start,q.end)+'</span></div>'
-        : '<strong>'+s.fullExpected.toFixed(1)+' h expected</strong>'+
-          '<small>Statutory holidays excluded</small>'+
-          '<div class="quarter-holiday-box"><span class="quarter-holiday-count">H '+holidaysInRange(q.start,q.end).length+'</span><span>'+holidaySummaryText(q.start,q.end)+'</span></div>')+
+        ? '<div class="quarter-metric"><strong>'+s.logged.toFixed(1)+' <span>/ '+s.expected.toFixed(1)+' h</span></strong><b>'+s.missing.toFixed(1)+' h missing</b></div>'+
+          '<div class="quarter-target">Target '+s.fullExpected.toFixed(1)+' h</div>'
+        : '<div class="quarter-metric"><strong>'+s.fullExpected.toFixed(1)+' <span>h expected</span></strong><b>Upcoming</b></div>')+
+      '<div class="quarter-holidays-compact"><span class="quarter-holiday-count">H '+holidays.length+'</span><span>'+holidayNames+'</span></div>'+
     '</button>';
   }).join("");
   box.querySelectorAll("[data-quarter]").forEach(b=>b.onclick=()=>{
@@ -456,7 +481,9 @@ function monthHistorySummary(){
     const expected=monthRows.filter(r=>!r.vacation&&!r.holiday).length*7;
     const logged=monthRows.reduce((n,r)=>n+r.submitted,0);
     const queued=monthRows.reduce((n,r)=>n+r.queued,0);
-    return {...m,end:effectiveEnd,expected,logged,queued,gap:Math.max(0,expected-(logged+queued))};
+    const effective=logged+queued;
+    const percent=expected>0?Math.min(100,Math.round((effective/expected)*100)):0;
+    return {...m,end:effectiveEnd,expected,logged,queued,effective,percent,gap:Math.max(0,expected-effective)};
   });
 }
 
@@ -885,7 +912,7 @@ function renderHistorical(){
   $("#historicalMissingHours").textContent=missingHours.toFixed(1);
   $("#historicalIncompleteDays").textContent=String(incomplete);
   $("#historicalQueuedHours").textContent=queuedHours.toFixed(1);
-  $("#historicalPeriodLabel").textContent=q.label+" • "+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+" – "+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,"")+" • 7 HOURS MON–FRI";
+  $("#historicalPeriodLabel").textContent=q.label+" • "+formatHistoryDate(q.start).replace(/^[A-Za-z]{3}, /,"")+" – "+formatHistoryDate(q.end).replace(/^[A-Za-z]{3}, /,"")+" • 7 HOURS MON–FRI • Salesforce snapshot: "+SALESFORCE_SNAPSHOT_RECORD_COUNT+" records";
   const monthSummary=monthHistorySummary();
   const monthBox=$("#historicalMonthSummary");
   if(monthBox){
@@ -893,22 +920,29 @@ function renderHistorical(){
     const totalLogged=monthSummary.reduce((n,m)=>n+m.logged,0);
     const totalQueued=monthSummary.reduce((n,m)=>n+m.queued,0);
     monthBox.innerHTML=
-      '<div class="month-summary-total"><strong>'+totalLogged.toFixed(1)+' / '+totalExpected.toFixed(1)+' h</strong><span>'+q.label+' logged / expected • through '+formatHistoryDate([q.end,historyEndDate()].sort()[0])+'</span></div>'+
+      '<div class="month-summary-total progress-total">'+
+        '<div><strong>'+(totalLogged+totalQueued).toFixed(1)+' / '+totalExpected.toFixed(1)+' h</strong>'+
+        '<span>'+q.label+' progress • '+totalLogged.toFixed(1)+' logged'+(totalQueued?' + '+totalQueued.toFixed(1)+' saved':'')+' • through '+formatHistoryDate([q.end,historyEndDate()].sort()[0])+'</span></div>'+
+        '<b class="month-total-pct">'+(totalExpected>0?Math.min(100,Math.round(((totalLogged+totalQueued)/totalExpected)*100)):0)+'%</b>'+
+        '<div class="month-progress-track" aria-hidden="true"><i style="width:'+(totalExpected>0?Math.min(100,((totalLogged+totalQueued)/totalExpected)*100):0)+'%"></i></div>'+
+      '</div>'+
       monthSummary.map(m=>
         '<div class="month-summary-wrap '+(historicalMonth===m.key?'selected':'')+'">'+
           '<button type="button" class="month-summary-row month-summary-select" data-history-month="'+m.key+'">'+
             '<div><strong>'+m.label+'</strong><small>'+(m.end<historyEndDate()?'full month':'through '+formatHistoryDate(m.end))+'</small>'+
             (holidaysInRange(m.start,m.end).length?'<em class="month-holiday-note">'+holidaySummaryText(m.start,m.end)+'</em>':'')+
           '</div>'+
-            '<div class="month-summary-metrics">'+
-              '<span><b>'+m.logged.toFixed(1)+'</b> logged</span>'+
-              '<span><b>'+m.expected.toFixed(1)+'</b> expected</span>'+
-              (m.queued?'<span><b>'+m.queued.toFixed(1)+'</b> queued</span>':'')+
-              ((m.logged+m.queued)>m.expected
-                ? '<span class="month-over"><b>✓ +'+((m.logged+m.queued)-m.expected).toFixed(1)+'</b> over</span>'
-                : ((m.logged+m.queued)===m.expected
-                  ? '<span class="month-good"><b>✓</b> complete</span>'
-                  : '<span class="month-gap"><b>'+m.gap.toFixed(1)+'</b> gap</span>'))+
+            '<div class="month-summary-progress">'+
+              '<div class="month-summary-metrics">'+
+                '<span><b>'+m.effective.toFixed(1)+'</b> / '+m.expected.toFixed(1)+' h</span>'+
+                (m.queued?'<span class="month-saved"><b>+'+m.queued.toFixed(1)+'</b> saved</span>':'')+
+                ((m.effective)>m.expected
+                  ? '<span class="month-over"><b>✓ +'+(m.effective-m.expected).toFixed(1)+'</b> over</span>'
+                  : (m.effective===m.expected
+                    ? '<span class="month-good"><b>✓</b> complete</span>'
+                    : '<span class="month-gap"><b>'+m.gap.toFixed(1)+'</b> gap</span>'))+
+              '</div>'+
+              '<div class="month-progress-line"><div class="month-progress-track"><i style="width:'+m.percent+'%"></i></div><b class="month-percent">'+m.percent+'%</b></div>'+
             '</div>'+
           '</button>'+
           '<button type="button" class="month-vacation-btn" data-vacation-month="'+m.key+'">🏖 Vacation days</button>'+
