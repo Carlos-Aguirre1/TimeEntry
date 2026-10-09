@@ -257,6 +257,81 @@ async function waitForNewForm(){
   }
   await sleep(800);
 }
+
+async function closeBlankTimeTrackingForm(){
+  const dialogs=[...document.querySelectorAll('[role="dialog"],.slds-modal,.modal-container')].filter(visible);
+  const dialog=dialogs.find(d=>{
+    const t=norm(d.innerText||d.textContent);
+    return t.includes("new time tracking") && (t.includes("save & new")||t.includes("save and new"));
+  });
+  if(!dialog)return false;
+  const buttons=[...dialog.querySelectorAll("button")].filter(visible);
+  const close=buttons.find(b=>{
+    const a=norm((b.getAttribute("title")||"")+" "+(b.getAttribute("aria-label")||""));
+    return a.includes("close") || a.includes("cancel and close");
+  });
+  if(!close)return false;
+  close.click();
+  for(let i=0;i<20;i++){
+    await sleep(150);
+    if(!visible(dialog))break;
+  }
+  await sleep(350);
+  return true;
+}
+
+function cleanCellText(el){
+  return (el?.innerText||el?.textContent||"").replace(/\s+/g," ").trim();
+}
+
+async function captureHistoricalSnapshot(){
+  // Give Salesforce list views a moment to finish rendering after a modal closes.
+  await sleep(500);
+  const tables=[...document.querySelectorAll("table")].filter(visible);
+  if(!tables.length)throw new Error("Could not find the visible Time Tracking table. Open the Time Tracking historical/list view and try again.");
+
+  const scored=tables.map(table=>{
+    const text=norm(table.innerText||table.textContent);
+    let score=0;
+    for(const key of ["date","account","type","hours","number of hours","details"]) if(text.includes(key))score++;
+    return {table,score};
+  }).sort((a,b)=>b.score-a.score);
+
+  const table=scored[0].table;
+  const headers=[...table.querySelectorAll("thead th")].map(cleanCellText).filter(Boolean);
+  const rows=[...table.querySelectorAll("tbody tr")].filter(visible).map(tr=>{
+    const cells=[...tr.querySelectorAll("th,td")].map(cleanCellText);
+    if(headers.length && cells.length){
+      const record={};
+      cells.forEach((v,i)=>record[headers[i]||("Column "+(i+1))]=v);
+      return record;
+    }
+    return cells;
+  }).filter(r=>Array.isArray(r)?r.some(Boolean):Object.values(r).some(Boolean));
+
+  if(!rows.length)throw new Error("The Time Tracking table was found, but no visible historical rows could be read.");
+
+  const snapshot={
+    capturedAt:new Date().toISOString(),
+    pageTitle:document.title,
+    url:location.href,
+    headers,
+    rowCount:rows.length,
+    rows
+  };
+  await chrome.storage.local.set({latestHistoricalSnapshot:snapshot});
+  return snapshot;
+}
+
+async function submitQueueAndCapture(queue,mapping){
+  const message=await runQueue(queue,mapping);
+  await waitForNewForm();
+  const closed=await closeBlankTimeTrackingForm();
+  if(!closed)throw new Error(message+" Entries were submitted, but the final blank Time Tracking form could not be closed automatically. No historical snapshot was taken.");
+  const snapshot=await captureHistoricalSnapshot();
+  return {message,snapshot};
+}
+
 async function runQueue(queue,mapping){
   for(let i=0;i<queue.length;i++){
     await fillEntry(queue[i],mapping);
@@ -291,6 +366,25 @@ chrome.runtime.onMessage.addListener((msg,_sender,sendResponse)=>{
         const remaining=msg.queue.slice(cursor);
         const message=await runQueue(remaining,msg.mapping);
         return {ok:true,message,nextCursor:msg.queue.length};
+      }
+      if(msg.action==="submitAndCapture"){
+        const cursor=Math.max(0,Math.min(Number(msg.cursor||0),msg.queue.length-1));
+        const remaining=msg.queue.slice(cursor);
+        const result=await submitQueueAndCapture(remaining,msg.mapping);
+        return {
+          ok:true,
+          message:result.message+" Historical snapshot captured: "+result.snapshot.rowCount+" rows.",
+          nextCursor:msg.queue.length,
+          snapshot:result.snapshot
+        };
+      }
+      if(msg.action==="captureHistorical"){
+        const snapshot=await captureHistoricalSnapshot();
+        return {
+          ok:true,
+          message:"Historical snapshot captured: "+snapshot.rowCount+" rows.",
+          snapshot
+        };
       }
       return {ok:false,error:"Unknown TimeEntry action."};
     }catch(e){return {ok:false,error:e.message||String(e)}}
