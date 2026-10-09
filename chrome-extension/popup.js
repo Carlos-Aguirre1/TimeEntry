@@ -163,15 +163,6 @@ $("#runQueue").onclick=async()=>{
     setStatus(r.message||"Queue complete.");
   }catch(e){setStatus(e.message,true)}
 };
-$("#submitAndCapture").onclick=async()=>{
-  try{
-    const q=parseQueue();
-    if(!confirm("Submit the remaining "+q.length+" queue entries, then close the final blank form and capture the Time Tracking historical table?"))return;
-    setStatus("Submitting entries, then capturing Historical...");
-    const r=await sendToSalesforce("submitAndCapture");
-    setStatus(r.message||"Entries submitted and Historical captured.");
-  }catch(e){setStatus(e.message,true)}
-};
 $("#captureHistorical").onclick=async()=>{
   try{
     setStatus("Capturing the visible Time Tracking historical table...");
