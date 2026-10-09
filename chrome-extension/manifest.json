@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "TimeEntry Salesforce Transfer 3.21",
-  "version": "3.21.0",
-  "description": "Transfers TimeEntry queue records into Salesforce and can capture the Time Tracking historical table without manual screenshots.",
+  "name": "TimeEntry Salesforce Transfer 3.22",
+  "version": "3.22.0",
+  "description": "Transfers TimeEntry queue records into Salesforce and provides a separate historical snapshot capture action.",
   "permissions": [
     "activeTab",
     "storage",
